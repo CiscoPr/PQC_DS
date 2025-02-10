@@ -20,4 +20,4 @@ WORKDIR /dilithium/ref
 RUN make
 
 # By default, run one of the test programs (for parameter set 2).
-CMD ["./test/test_dilithium2"]
+CMD ["./test/test_dilithium5"]
