@@ -16,8 +16,8 @@ WORKDIR /dilithium
 RUN git clone https://github.com/pq-crystals/dilithium.git .
 
 # Change to the reference implementation directory and build it.
-WORKDIR /dilithium/ref
+WORKDIR /dilithium/avx2
 RUN make
 
 # By default, run one of the test programs (for parameter set 2).
-CMD ["./test/test_dilithium5"]
+CMD ["./test/test_dilithium2"]

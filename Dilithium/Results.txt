@@ -1,3 +1,33 @@
+Test Dilithium:
+- Exercises the full signing and verification process; performs a complete end‑to‑end test of the Dilithium signature scheme;
+- Key Generation: Generates a key pair repeatedly (typically 10,000 times).
+- Signing: Signs a random message (usually 59 bytes long).
+- Verification: Verifies the generated signature.
+- Error Checking: It even intentionally corrupts a signature (by changing one byte) and checks that the verification correctly fails.
+- Verifies if the scheme works correctly in practice, ensuring that the key generation, signing, and verification routines all function as expected under typical (and slightly adverse) conditions.
+
+Test Vectors:
+- Generates deterministic test vectors; these vectors are intermediate values produced during the execution of the algorithm
+- Deterministic Generation: Instead of working on random messages and keys, this test uses predetermined inputs (or seeds) so that every run produces exactly the same output.
+- Intermediate Values: It prints out several internal values that occur during the signing process.
+  - A 48‑byte seed that is used to initialize the algorithm.
+  - The matrix A that is derived from part of the seed.
+  - A short secret vector (s) computed using the seed and a fixed nonce (typically nonce 0).
+  - A masking vector (y) also computed from the seed and nonce 0.
+  - The vector w = A·y, which is split into:
+    - w1 (high bits)
+    - w0 (low bits)
+  - The result of power‑of‑two rounding, producing:
+    - t1 (the rounded high part)
+    - t0 (the corresponding low part)
+  - The challenge (c) computed from the seed and w1.
+- Outputs a list of the deterministic values printed to the console. These are the so‑called “test vectors” which can be compared against known correct values.
+  This is especially useful for developers who want to ensure that their implementation of Dilithium is fully compliant.
+- Useful for verifying and debugging implementations.
+
+
+
+--------------------------------------------------------Test Dilithium In Reference folder-------------------------------------------------------------------------------------------------------------
 Algorithm 2:
 CRYPTO_PUBLICKEYBYTES = 1312
 CRYPTO_SECRETKEYBYTES = 2560
@@ -12,3 +42,26 @@ Algorithm 5:
 CRYPTO_PUBLICKEYBYTES = 2592
 CRYPTO_SECRETKEYBYTES = 4896
 CRYPTO_BYTES = 4627
+
+--------------------------------------------------------Test Dilithium In Reference folder-------------------------------------------------------------------------------------------------------------
+
+TODO with a processor that supports AVX2 instructions
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+2,3 and 5 are the different Dilithium implementations, for the security levels:
+- 2: 128-bit classical security; generally results in smaller key and signature sizes and faster operations compared to the higher modes; efficiency is a priority
+- 3: 192-bit classical security; balance between efficiency and increased security; larger sizes and slower performance than mode 2, but with enhanced resistance to attacks
+- 5: 256-bit security; larger keys and signatures and may be slower; provides a greater security margin
+
+What are each of the output values?
+- CRYPTO_PUBLICKEYBYTES: The number of bytes that make up a public key in the scheme; important for memory allocation and key storage
+- CRYPTO_SECRETKEYBYTES: The number of bytes required for the private key; usually larger than the public key, since it holds additional data; important to sign messages
+- CRYPTO_BYTES: The number of bytes in a signature produced by the scheme; important for storage, trasnmission and verification of signatures
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Ref folder: reference implementation
+Avx2 folder: optimized specifically for x86 CPUs that support the AVX2 instruction set. It aims to achieve much higher performance by taking advantage of advanced vector instructions.
+The Intel AVX2 extends the Intel Advanced Vector Extensions (Intel® AVX) with 256-bit integer instructions, floating-point fused multiply-add (FMA) instructions, and gather operations
