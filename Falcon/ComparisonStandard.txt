@@ -1,0 +1,1 @@
+Currently, NIST is working on FIPS 206, a standardization based on the Falcon Solution.

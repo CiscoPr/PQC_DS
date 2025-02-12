@@ -1,0 +1,24 @@
+Concepts:
+- Winternitz One-Time Signature (WOTS): creates a signature by iteratively applying hash functions in chains, with the length of these chains controlled by a parameter.
+                                        the parameter balances between the signature’s size and the computational effort required
+
+- Forest of Random Subsets (FORS): “few-time” signature scheme; splits a message (or its digest) into multiple parts and then signs each part with a small, independently generated one-time signature.
+                                    These signatures are arranged in multiple small trees - a "forest" - and their combination provides an overall signature
+
+Differences From the SPHINCS+ Submission
+- Additional Address Types: FIPS 205 defines two new address types (WOTS_PRF and FORS_PRF) to improve secret key value generation in the WOTS+ and FORS components.
+
+- Enhanced Key Inputs to Mitigate Attacks:  The standard now incorporates the public key seed (PK.seed) as an input to the pseudorandom function (PRF) and the
+                                            mask generation function (MGF1) to help prevent multi‑key and multi‑target long‑message second preimage attacks.
+
+- Stronger Hash Function Usage:  For higher security levels (categories 3 and 5), FIPS 205 replaces SHA‑256 with SHA‑512 in critical functions
+                                (such as Hₘₛg, PRFₘₛg, H, and Tₗ) to address weaknesses identified in the original SPHINCS+ submission.
+
+- Revised FORS Key Extraction: The method for extracting bits from the message digest for selecting a FORS key has been updated.
+                               This change aligns the standard with the reference implementation, resolving previous ambiguities—even though it makes the new method incompatible with the older one.
+
+- Pseudocode Corrections: Adjustments (such as correcting the shift of the checksum in wots_sign and wots_pkFromSig)
+                          ensure that the pseudocode accurately reflects the intended operation of the algorithm.
+
+- Domain Separation in SLH-DSA Functions: In response to public feedback on the initial FIPS 205 draft, the signing and verification functions
+                                          were modified to explicitly separate cases where the message is signed directly versus signing its digest.
