@@ -1,34 +1,19 @@
-# NIST Post-Quantum Cryptography Standardization Criteria
+# NIST Post-Quantum Cryptography Evaluation Criteria
 
-## Security
-Security is the most critical evaluation criterion. The following aspects are considered:
-
-- **Public-Key Cryptography Applications**: Compatibility with existing standards like TLS, SSH, and DNSSEC.
-- **Security Definitions**: Ensuring encryption schemes meet IND-CCA2 security (indistiguishability under adaptive Chosen Ciphertext Attack ).
-- **Resistance to Attacks**: Protection against classical and quantum attacks.
-- **Malleability and Non-Repudiation**: Preventing unauthorized modifications and ensuring signature integrity.
-- **Security Proofs**: Strong theoretical foundations with formal security proofs.
-
-## Cost
-Cost refers to the efficiency of an algorithm in terms of computational resources:
-
-- **Size Efficiency**: Minimized sizes for public keys, ciphertexts, and signatures. ("The importance of public-key size may vary depending on the application; if applications can cache public keys, or otherwise avoid transmitting them frequently, the size of the public key may be of lesser importance. In contrast, applications that seek to obtain perfect forward secrecy by transmitting a new public key at the beginning of every session are likely to benefit greatly from algorithms that use relatively small public keys.")
-- **Computational Performance**: Efficient execution for encryption, decryption, and key generation.
-- **Memory Usage**: Optimized RAM requirements for deployment in constrained environments.
-- **Flexibility**: Ability to adapt to various security and performance trade-offs.
-
-## Algorithm and Implementation Characteristics
-These characteristics influence real-world usability and adoption:
-
-- **Flexibility**: Supporting additional functionalities and seamless integration with existing protocols. ("Some examples of “flexibility” may include (but are not limited to) the following:
-The scheme can be modified to provide additional functionalities that extend beyond the minimum requirements of public-key encryption, KEM, or digital signature (e.g., asynchronous or implicitly authenticated key exchange, etc.).
-It is straightforward to customize the scheme’s parameters to meet a range of security targets and performance goals.
-The algorithms can be implemented securely and efficiently on a wide variety of platforms, including constrained environments, such as smart cards.
-Implementations of the algorithms can be parallelized to achieve higher performance.
-The scheme can be incorporated into existing protocols and applications, requiring as few changes as possible.")
-- **Simplicity**: Straightforward design to ease secure implementations.
-- **Adoption Readiness**: Free and fair licensing to promote widespread use.
-
-These criteria ensure that selected algorithms are secure, efficient, and practical for global adoption in post-quantum cryptographic standards.
-
-For more info, go [here](https://csrc.nist.gov/projects/post-quantum-cryptography/post-quantum-cryptography-standardization/evaluation-criteria).
+| Category                                        | Criterion                                              | Description                                                                                                                                                                                                     |
+|-------------------------------------------------|--------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Security**                                    | **Applications of Public-Key Cryptography**            | Evaluation based on applicability to protocols (TLS, SSH, IKE, IPsec, DNSSEC) and additional identified applications.                                                                                            |
+|                                                 | **Security Definition for Encryption/Key-Establishment** | Semantically secure encryption or key encapsulation schemes resistant to adaptive chosen ciphertext attacks (IND-CCA2).                                                                                         |
+|                                                 | **Security Definition for Ephemeral-Only Encryption/Key-Establishment** | Passive security (IND-CPA) schemes may be considered for purely ephemeral key-exchange protocols if providing substantial advantages.                                                                          |
+|                                                 | **Security Definition for Digital Signatures**         | Existential unforgeability against adaptive chosen message attacks (EUF-CMA).                                                                                                                                   |
+|                                                 | **Security Strengths**                                 | Provides various security strength levels (1 to 5) comparable to breaking AES encryption (AES-128 to AES-256).                                                                                                  |
+|                                                 | **Classical and Quantum Attacks**                      | Assessed against known classical and quantum attacks, with computational resource estimates for both attack types provided by submitters.                                                                       |
+|                                                 | **Misuse Resistance**                                  | Secure even when usage assumptions are violated (nonce reuse, insufficient randomness).                                                                                                                         |
+|                                                 | **Security Models**                                    | Security analysis within realistic attack models (adaptive chosen ciphertext and adaptive chosen message attacks).                                                                                              |
+| **Cost**                                        | **Public Key, Ciphertext, and Signature Size**         | Evaluation of sizes relevant for bandwidth-constrained or packet-limited applications.                                                                                                                          |
+|                                                 | **Computational Efficiency of Public and Private Key Operations** | Efficiency evaluation of public operations (encryption, verification) and private operations (decryption, signing) in hardware and software contexts.                                                           |
+|                                                 | **Computational Efficiency of Key Generation**         | Efficiency of generating keys, critical for applications requiring frequent key exchanges (perfect forward secrecy scenarios).                                                                                  |
+|                                                 | **Decryption Failures**                                | Analysis of frequency and impact of decryption/decapsulation failures, with the goal of minimizing or eliminating such occurrences.                                                                             |
+| **Algorithm and Implementation Characteristics** | **Flexibility**                                        | Schemes adaptable to different environments, customizations, parallelization, extended functionalities, and easy integration into existing systems.                                                             |
+|                                                 | **Simplicity**                                         | Preference for clear and straightforward schemes to facilitate easier implementation and security analysis.                                                                                                     |
+|                                                 | **Adoption**                                           | Consideration of intellectual property status, licensing terms, and patent restrictions. Schemes without restrictive licensing or patent issues are favored.                                                     |
