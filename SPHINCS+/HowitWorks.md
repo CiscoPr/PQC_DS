@@ -1,78 +1,39 @@
-# SPHINCS+ Components Overview
+# SPHINCS+
 
-This document explains three key components of the SPHINCS+ signature scheme:
-- **FORS**
-- **SPX**
-- **Haraka**
+## Structure
+The signature scheme combines these main components:
+- **WOTS+ (Winternitz One-Time SIgnature Plus)**: each key pair signs exactly one message. The security relies on hash chains, wherein the public key consists of hash outputs from secret seeds. Signing involves revealing certain intermediate values of these chains, and verification reconstructs the hash chains to validate authenticity.
+- **FORS (Forest of Random Subsets)**: splits the message into multiple indices. Each index corresponds to selecting and revealing secrets from multiple distinct trees.
+- **XMSS (eXtended Merkle Signature Scheme)**: uses binary Merkle trees to manage multiple WOTS+ public keys efficiently. Each leaf node is a WOTS+ public key. Authentication occurs through Merkle paths, leading from leaf nodes up to the root node. The root node serves as the public key for verification.
+- **Hypertree (Multiple XMSS layers)**: structures multiple XMSS layers hierarchically. Each XMSS tree signs the root of the tree below.
+- **Haraka (Cryptographic hash function for short-input hashing)**: specialized cryptographic hash function optimized for small input sizes (≤256 bits). Enhances the scheme's performance for message digest computations, node hashing in Merkle trees and hashing operations for WOTS+ and FORS
 
-## 1. FORS
+## Operations
+### Key Generation (TODO: Develop more)
+  - Private Key:
+    - `SK.seed`: used to generate private keys for WOTS+, FORS, and Merkle tree nodes.
+    - `SK.prf`: pseudorandom function used to generate deterministic randomness for signing.
 
-**FORS** stands for **Forest of Random Subsets**.
+  - Public Key:
+    - `PK.seed`: public seed to initialize hash functions and ensure domain separation.
+    - `PK.root`: Merkle tree root for public key verification.
 
-- **Purpose:**
-  - Acts as a many-time (or few-time) signature scheme for signing a short message digest.
-  - Compresses the message digest into a compact signature component.
-  
-- **How It Works:**
-  - The message (or its hash) is split into several parts.
-  - Each part is signed using a one-time signature mechanism on a small subset of the signature space.
-  - The collection of these one-time signatures (forming a “forest”) produces an intermediate public key value.
-  - This intermediate value is later embedded in a larger Merkle tree that provides overall stateless security.
+### Signing process:
+  1. **Generate signature randomness (R)**: `R ← PRF_msg(SK.prf, OptRand, M)` -> PRF_msg is a pseudorandom function that uses the private seed SK.prf, optional randomness (OptRand), and the message (M) to generate a unique randomness (R) for each signature.
+  2. **Derive the message digest and indices**: `(md || idx_tree || idx_leaf) ← H_msg(R, PK.seed, PK.root, M)` -> H_msg is a hash function combining the signature randomness (R), public seed (PK.seed), public root (PK.root), and the message (M). It outputs a message digest (md) used for FORS signing, and indices (idx_tree, idx_leaf) that identify the specific XMSS tree and leaf position within the hypertree structure.
+  3. **Generate FORS signature based on the message digest**: `SIG_FORS ← fors_sign(md, SK.seed, PK.seed, ADRS)` -> FORS signing process uses the message digest (md) to select secret keys from multiple trees of the forest. Each selected key is combined into a signature (SIG_FORS), leveraging private seeds (SK.seed) and public seeds (PK.seed) along with address structures (ADRS) for domain separation.
+  4. **Derive FORS public key**: `PK_FORS ← fors_pkFromSig(SIG_FORS, md, PK.seed, ADRS)` -> reconstructs the FORS public key (PK_FORS) from the previously generated FORS signature (SIG_FORS) and message digest (md). Correct reconstruction verifies that the signature authentically corresponds to the given digest.
+  5. **Sign the FORS public key with XMSS hypertree**: `SIG_HT ← ht_sign(PK_FORS, SK.seed, PK.seed, idx_tree, idx_leaf)` -> PK_FORS is signed using the hypertree structure (ht_sign). The hypertree, composed of multiple XMSS layers, utilizes the XMSS scheme to authenticate this public key using secret seeds (SK.seed), public seeds (PK.seed), and derived indices (idx_tree, idx_leaf).
+  6. **Concatenate the final signature**: `SIG = R || SIG_FORS || SIG_HT` -> The complete SPHINCS+ signature (SIG) comprises the initial randomness (R), the FORS signature (SIG_FORS), and the XMSS hypertree signature (SIG_HT). The verifier uses this combined signature to validate authenticity comprehensively.
 
-- **Implementation:**
-  - Functions like `fors_sign` and `fors_pk_from_sig` handle the generation of a FORS signature and the derivation of the corresponding public key from the signature.
-  - Test executables (e.g., in `test/fors.c`) verify that the FORS component operates as expected.
-
-
-## 2. SPX
-
-**SPX** is the prefix used throughout the SPHINCS+ reference implementation and refers to the entire signature scheme.
-
-- **What It Is:**
-  - SPHINCS+ is constructed by combining several building blocks:
-    - **FORS** for signing short message digests.
-    - **WOTS+** (Winternitz One-Time Signature Plus) for chain signatures.
-    - A hypertree structure (a multi-layered Merkle tree) that interlinks the above components.
-    
-- **Usage in the Implementation:**
-  - Many constants and functions are prefixed with `SPX_` (e.g., `SPX_MLEN`, `SPX_BYTES`, `crypto_sign`).
-  - The `test/spx` target builds an executable that tests the full signature generation and verification process.
-  
-- **Overall Role:**
-  - SPX represents the complete stateless signature scheme.
-  - It encompasses the entire process: key generation, signing (using the various components like FORS and WOTS+), and verification.
+### Signing Verification:
+  1. **Recompute Message Digest and Indices**: `(md || idx_tree || idx_leaf) ← H_msg(R, PK.seed, PK.root, M)`:extracts the randomness (R) from the received signature (SIG), computing the message digest and indices using the hash function. Here, md is the message digest, idx_tree identifies the specific XMSS tree within the hypertree, and idx_leaf identifies the leaf node within the XMSS tree.
+  2. **Recover FORS Public Key from the FORS Signature**: `PK_FORS ← fors_pkFromSig(SIG_FORS, md, PK.seed, ADRS)`: Using the recomputed message digest (md) and the provided FORS signature (SIG_FORS), reconstruct the corresponding FORS public key (PK_FORS). Correct reconstruction indicates that the signer had access to the secret keys corresponding to the FORS trees.
+  3. **Validate the Hypertree Signature**: `XMSS_root ← hr_verify(SIG_HT, PK_FORS, PK.seed, idx_tree, idx_leaf)`: Verify the Hypertree signature (SIG_HT) using the reconstructed FORS public key (PK_FORS). Confirm that the final XMSS root matches the public key root (PK.root). Matching roots validate the authenticity of the signature, proving it was generated by the legitimate holder of the secret key.
 
 
-## 3. Haraka
-
-**Haraka** is a lightweight cryptographic hash function family.
-
-- **Design and Purpose:**
-  - Haraka is designed for high efficiency, particularly on platforms that can exploit AES instructions.
-  - It is optimized for short inputs, making it well suited for SPHINCS+ operations where small hash outputs are needed.
-  
-- **How It’s Used in SPHINCS+:**
-  - SPHINCS+ supports multiple hash function options (e.g., SHA-2, SHAKE, and Haraka).
-  - When the build parameter (e.g., `PARAMS = sphincs-haraka-128f`) specifies Haraka, the implementation links with files such as:
-    - `haraka.c`
-    - `hash_haraka.c`
-    - `thash_haraka_robust.c`
-  - This choice affects both the signing and verification processes.
-  
-- **Testing Haraka:**
-  - The test executable (e.g., `test/haraka.c`) compares the output of the all-at-once function (`haraka_S`) with its incremental versions (`haraka_S_inc_*` functions).
-  - The goal is to ensure that processing the input in chunks produces the same final hash as processing it all at once.
-
-
-## Summary
-
-- **FORS:**  
-  A component that signs parts of a message digest using a forest of one-time signatures, compressing the digest into a compact value that is later integrated into a larger Merkle tree.
-
-- **SPX:**  
-  Refers to the overall SPHINCS+ signature scheme. It combines FORS, WOTS+, and a hypertree structure to provide a stateless, secure, and flexible signature mechanism.
-
-- **Haraka:**  
-  A high-speed, lightweight hash function that is used as one of the selectable hash functions within SPHINCS+. It is optimized for platforms that support fast AES-like operations and is particularly effective for short inputs.
-
-This repository’s build system (as defined in the Makefile) allows you to compile and test these components individually (e.g., via `make test/fors.exec`, `make test/spx.exec`, and `make test/haraka`) as well as to run performance benchmarks. The Makefile conditionally includes the appropriate source files based on the chosen parameter set and hash function implementation.
+## Test folder:
+- `benchmark.c`: Evaluates SPHINCS+ performance metrics.
+- `fors.c`: Validates FORS signature and public-key derivation.
+- `haraka.c`: Ensures correctness and measures incremental hashing operations.
+- `spx.c`: Performs comprehensive tests for keypair generation, signing, and verification cycles.
