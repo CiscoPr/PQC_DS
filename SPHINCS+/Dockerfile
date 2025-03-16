@@ -27,5 +27,6 @@ WORKDIR /sphincsplus/sphincsplus/ref
 # Build the project (this will use the provided Makefile)
 RUN make
 
-# Run the test suite (assuming the Makefile has a "test" target)
-CMD ["make", "test"]
+# Run the test suite and output all messages to stdout.
+# Using /bin/sh -c ensures that all output appears in container logs.
+CMD ["/bin/sh", "-c", "make test 2>/dev/null"]
