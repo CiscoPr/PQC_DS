@@ -1,1 +1,3 @@
 - procurar otimizações do SPHINCS+
+- criar testes personalizados para o DIlithium e o SPHINCS+ 
+(ver melhor possíveis falhas dos testes e talvez)
