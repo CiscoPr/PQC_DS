@@ -1,0 +1,9 @@
+- levantamento por alto dos fault attacks do Dilithium
+- perceber como esses fault attacks afetam as outras soluções
+- levantamento por alto de ataques ao SPHINCS+
+- comparar os ataques com as outras soluções
+- fazer uma análise do tempo com mais iterações (podem ser centenas de operações graças ao 
+que se faz nos papers ou dezenas, tenho de ver)
+- fazer uma análise e explicar o porquê de achar interessante ver os gráficos de tempo (falar que o DILITHIUM
+pode dar fault de algumas assinaturas durante o processo)
+- ir escrevendo para a tese

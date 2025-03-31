@@ -23,7 +23,7 @@ WORKDIR /dilithium/ref
 RUN make shared
 
 # Copy in custom test source files (ensure these files are in the build context)
-COPY messages_dont_match.c open_message_length_wrong.c signed_message_length_wrong.c trivial_forgery_possible.c verification_failure.c test_timing.c generate_graph.py ./
+COPY messages_dont_match.c open_message_length_wrong.c signed_message_length_wrong.c trivial_forgery_possible.c verification_failure.c test_timing.c generate_graph.py s software_fault_attack.c ./
 
 # Compile custom test executables linking against the shared library
 RUN gcc -O2 -DDILITHIUM_MODE=2 -o test_messages test/test_dilithium.c messages_dont_match.c randombytes.c \
