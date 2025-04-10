@@ -6,6 +6,8 @@ options=("Dilithium" "SPHINCS+" "Quit")
 select opt in "${options[@]}"; do
     case $opt in
         "Dilithium")
+            docker stop dilithium_container
+            docker rm dilithium_container
             echo "Building Dilithium Docker image..."
             docker build -t dilithium_image ./Dilithium
 
@@ -14,10 +16,6 @@ select opt in "${options[@]}"; do
             mkdir -p Dilithium/results/mode2
             mkdir -p Dilithium/results/mode3
             mkdir -p Dilithium/results/mode5
-
-            # Clear the container if it exists
-            docker rm dilithium_container
-
 
             # Run the container in detached mode with a fixed name.
             docker run --cpuset-cpus="0" --name dilithium_container -d dilithium_image
@@ -34,9 +32,11 @@ select opt in "${options[@]}"; do
             docker cp dilithium_container:/results/dilithium_times_mode3.png Dilithium/results/mode3/dilithium_times.png
             docker cp dilithium_container:/results/dilithium_times_mode5.csv Dilithium/results/mode5/dilithium_times.csv
             docker cp dilithium_container:/results/dilithium_times_mode5.png Dilithium/results/mode5/dilithium_times.png
-            
+
+
+
             # Clean up the container
-            docker rm dilithium_container
+            # docker rm dilithium_container
 
             echo "Results have been downloaded to the local 'results' folder."
             break

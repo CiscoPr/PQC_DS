@@ -20,22 +20,23 @@ RUN git clone https://github.com/pq-crystals/dilithium.git .
 
 # Build Dilithium shared libraries
 WORKDIR /dilithium/ref
+
 RUN make shared
 
 # Copy custom C source files
-COPY messages_dont_match.c open_message_length_wrong.c signed_message_length_wrong.c \
-     trivial_forgery_possible.c verification_failure.c test_timing.c generate_graph.py ./
+COPY instrumental_sign.c test_timing.c generate_graph.py ./
 
 # Compile tests
-RUN  gcc -O2 -DDILITHIUM_MODE=2 -o test_timing_2 test_timing.c \
-sign.c randombytes.c fips202.c poly.c polyvec.c packing.c rounding.c symmetric-shake.c ntt.c \
--I. -L. -lpqcrystals_dilithium2_ref -lpqcrystals_fips202_ref && \
-     gcc -O2 -DDILITHIUM_MODE=3 -o test_timing_3 test_timing.c \
-sign.c randombytes.c fips202.c poly.c polyvec.c packing.c rounding.c symmetric-shake.c ntt.c \
--I. -L. -lpqcrystals_dilithium3_ref -lpqcrystals_fips202_ref && \
-     gcc -O2 -DDILITHIUM_MODE=5 -o test_timing_5 test_timing.c \
-sign.c randombytes.c fips202.c poly.c polyvec.c packing.c rounding.c symmetric-shake.c ntt.c \
--I. -L. -lpqcrystals_dilithium5_ref -lpqcrystals_fips202_ref
+RUN gcc -O2 -DDILITHIUM_MODE=2 -o test_timing_2 test_timing.c instrumental_sign.c randombytes.c \
+    -I. -I./ref -I./avx2 -L. -lpqcrystals_dilithium2_ref -lpqcrystals_fips202_ref
+
+RUN gcc -O2 -DDILITHIUM_MODE=3 -o test_timing_3 test_timing.c instrumental_sign.c randombytes.c \
+    -I. -I./ref -I./avx2 -L. -lpqcrystals_dilithium3_ref -lpqcrystals_fips202_ref
+
+RUN gcc -O2 -DDILITHIUM_MODE=5 -o test_timing_5 test_timing.c instrumental_sign.c randombytes.c  \
+    -I. -I./ref -I./avx2 -L. -lpqcrystals_dilithium5_ref -lpqcrystals_fips202_ref
+
+
 #gcc -O2 -DDILITHIUM_MODE=2 -o test_messages test/test_dilithium.c messages_dont_match.c randombytes.c \
 #    -I. -I./ref -I./avx2 -L. -lpqcrystals_dilithium2_ref -lpqcrystals_fips202_ref && \
 #    gcc -O2 -DDILITHIUM_MODE=2 -o test_mess_len_open test/test_dilithium.c open_message_length_wrong.c randombytes.c \
@@ -62,10 +63,12 @@ for mode in 2 3 5; do \
     keygen=$(echo \"$output\" | grep 'Average key generation time:' | awk '{print $5}'); \
     sign=$(echo \"$output\" | grep 'Average signing time:' | awk '{print $4}'); \
     verify=$(echo \"$output\" | grep 'Average verification time:' | awk '{print $4}'); \
+    rejections=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $4}'); \
     [ -z \"$keygen\" ] && keygen=\"0.00\"; \
     [ -z \"$sign\" ] && sign=\"0.00\"; \
     [ -z \"$verify\" ] && verify=\"0.00\"; \
-    python3 generate_graph.py \"$mode\" \"$keygen\" \"$sign\" \"$verify\"; \
+    [ -z \"$rejections\" ] && rejections=\"0\"; \
+    python3 generate_graph.py \"$mode\" \"$keygen\" \"$sign\" \"$verify\" \"$rejections\"; \
   done; \
 done; \
 echo 'Timing tests complete. Check /results for CSV and graphs.'"]

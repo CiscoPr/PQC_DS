@@ -1,0 +1,2 @@
+- a comparação base das 3 soluções (Dilithium, Falcon, SPHINCS+)
+- andar da perna :,)
