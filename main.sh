@@ -15,8 +15,12 @@ select opt in "${options[@]}"; do
             mkdir -p Dilithium/results/mode3
             mkdir -p Dilithium/results/mode5
 
+            # Clear the container if it exists
+            docker rm dilithium_container
+
+
             # Run the container in detached mode with a fixed name.
-            docker run --name dilithium_container -d dilithium_image
+            docker run --cpuset-cpus="0" --name dilithium_container -d dilithium_image
 
             echo "Waiting for container to finish..."
             docker wait dilithium_container
