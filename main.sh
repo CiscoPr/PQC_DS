@@ -42,10 +42,32 @@ select opt in "${options[@]}"; do
             break
             ;;
         "SPHINCS+")
+            echo "Stopping any running SPHINCS+ container..."
+            docker stop sphincsplus_container 2>/dev/null
+            docker rm sphincsplus_container 2>/dev/null
+
             echo "Building SPHINCS+ Docker image..."
             docker build -t sphincsplus_image ./SPHINCS+
-            echo "Running SPHINCS+ container..."
-            docker run --rm sphincsplus_image
+
+            echo "Running SPHINCS+ container in detached mode..."
+            mkdir -p SPHINCS+/results
+            docker run --cpuset-cpus="0" --name sphincsplus_container -d sphincsplus_image
+
+            echo "Waiting for SPHINCS+ container to finish..."
+            docker wait sphincsplus_container
+
+            echo "Copying SPHINCS+ results from container..."
+            # List of parameter sets to benchmark. Adjust as per your parameter file names.
+            for param in sha2-128s sha2-128f sha2-192s sha2-192f sha2-256s sha2-256f; do
+                echo "Copying results for parameter set $param..."
+                mkdir -p SPHINCS+/results/"$param"
+                docker cp sphincsplus_container:/results/sphincsplus_times_${param}.csv SPHINCS+/results/"$param"/times.csv
+                docker cp sphincsplus_container:/results/sphincsplus_times_${param}.png SPHINCS+/results/"$param"/times.png
+            done
+
+            echo "Removing SPHINCS+ container..."
+            docker rm sphincsplus_container
+            echo "SPHINCS+ results have been downloaded to the local 'SPHINCS+/results' folder."
             break
             ;;
         "Quit")

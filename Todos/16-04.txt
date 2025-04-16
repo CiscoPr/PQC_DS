@@ -1,0 +1,2 @@
+- testar um caso no DILITHIUM em que não há rejections de todo, e comparar com os gráficos obtidos previamente
+- Analisar melhor os Side-channel Attacks nas duas soluções e completar a tabela
