@@ -56,17 +56,9 @@ select opt in "${options[@]}"; do
             echo "Waiting for SPHINCS+ container to finish..."
             docker wait sphincsplus_container
 
-            echo "Copying SPHINCS+ results from container..."
-            # List of parameter sets to benchmark. Adjust as per your parameter file names.
-            for param in sha2-128s sha2-128f sha2-192s sha2-192f sha2-256s sha2-256f; do
-                echo "Copying results for parameter set $param..."
-                mkdir -p SPHINCS+/results/"$param"
-                docker cp sphincsplus_container:/results/sphincsplus_times_${param}.csv SPHINCS+/results/"$param"/times.csv
-                docker cp sphincsplus_container:/results/sphincsplus_times_${param}.png SPHINCS+/results/"$param"/times.png
-            done
 
             echo "Removing SPHINCS+ container..."
-            docker rm sphincsplus_container
+            # docker rm sphincsplus_container
             echo "SPHINCS+ results have been downloaded to the local 'SPHINCS+/results' folder."
             break
             ;;

@@ -1,9 +1,9 @@
-# Use a base image with a recent Ubuntu release
+# 1) Base image + packages
 FROM ubuntu:20.04
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Install essential build tools, git, Python, and required packages
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    apt-get install -y \
       build-essential \
       git \
       ca-certificates \
@@ -14,47 +14,60 @@ RUN apt-get update && \
     python3 -m pip install pandas matplotlib && \
     rm -rf /var/lib/apt/lists/*
 
-# Set the working directory and clone the SPHINCS+ repository
+# 2) Clone SPHINCS+
 WORKDIR /sphincsplus
-RUN git clone https://github.com/sphincs/sphincsplus.git
+RUN git clone https://github.com/sphincs/sphincsplus.git .
 
-# Change to the repository's reference implementation directory
-WORKDIR /sphincsplus/sphincsplus/ref
+# 3) Drop into the ref/ directory and bring in your harness + graph script
+WORKDIR /sphincsplus/ref
+COPY test_timing.c generate_graph.py ./
 
-# Build the project normally (this builds tests as well)
-RUN make
+# 4) Build the “ref” lib
+RUN make clean && make
 
-# (Optional) Build a shared library if required by your tests.
-# Example: Build one using the "sphincs-haraka-128f" parameter set (you can remove or adapt this block as needed)
-RUN gcc -shared -fPIC -O3 -std=c99 -DPARAMS=sphincs-haraka-128f -I. \
-    -o libsphincs.so address.c randombytes.c merkle.c wots.c wotsx1.c utils.c utilsx1.c fors.c sign.c haraka.c hash_haraka.c thash_haraka_robust.c -lcrypto
+# 5) Compile the timing harness; we’ll overwrite this for each variant in the CMD loop
+RUN gcc -mavx2 -march=haswell \
+    -Wall -Wextra -Wpedantic -O3 -std=c99 \
+    -Wconversion -Wmissing-prototypes \
+    -DPARAMS=sphincs-haraka-128f -DTHASH=robust \
+    -I. \
+    test_timing.c \
+      address.c randombytes.c merkle.c wots.c wotsx1.c \
+      utils.c utilsx1.c fors.c sign.c \
+      haraka.c hash_haraka.c thash_haraka_robust.c \
+    -lcrypto -lrt \
+    -o test_timing
 
-# Copy benchmark-related source files and the graph generator script into the container
-COPY test_timing.c .
-COPY generate_graph.py .
-
-# Create a directory for storing results
+# 6) Prepare results dir
 RUN mkdir -p /results
 
-# Default command: compile and run the timing benchmark for each SHA-256 parameter set.
-# The parameter set names here are based on the official repo names (e.g., "sha2-128s")
-# For SHA-256 instantiations, the additional source files are: sha2.c, hash_sha2.c, thash_sha2_robust.c.
-CMD ["/bin/sh", "-c", "\
-echo 'Starting SPHINCS+ benchmark loop...'; \
-mkdir -p /results; \
-for param in sha2-128s sha2-128f sha2-192s sha2-192f sha2-256s sha2-256f; do \
-  echo \"Testing parameter set $param...\"; \
-  HASH_SRC='sha2.c hash_sha2.c thash_sha2_robust.c'; \
-  gcc -O2 -DPARAMS=$param -o test_timing test_timing.c sign.c address.c randombytes.c fors.c merkle.c wots.c wotsx1.c utils.c utilsx1.c $HASH_SRC -I. -lcrypto || exit 1; \
+# 7) For each Haraka‑128s/128f/192s/192f/256s/256f, rebuild, retest and re‑graph
+CMD ["bash","-lc", "\
+for VAR in 128s 128f 192s 192f 256s 256f; do \
+  echo; echo \"=== Building & testing sphincs-haraka-$VAR ===\"; \
+  gcc -mavx2 -march=haswell \
+      -Wall -Wextra -Wpedantic -O3 -std=c99 \
+      -Wconversion -Wmissing-prototypes \
+      -DPARAMS=\"sphincs-haraka-$VAR\" -DTHASH=robust \
+      -I. \
+      test_timing.c \
+        address.c randombytes.c merkle.c wots.c wotsx1.c \
+        utils.c utilsx1.c fors.c sign.c \
+        haraka.c hash_haraka.c thash_haraka_robust.c \
+      -lcrypto -lrt \
+      -o test_timing-$VAR; \
+  mkdir -p /results/haraka-$VAR; \
   for i in $(seq 1 100); do \
-    output=$(./test_timing); \
-    echo \"$output\"; \
-    keygen=$(echo \"$output\" | grep 'Average key generation time:' | awk '{print $5}'); \
-    sign=$(echo \"$output\" | grep 'Average signing time:' | awk '{print $4}'); \
-    verify=$(echo \"$output\" | grep 'Average verification time:' | awk '{print $4}'); \
-    # For SPHINCS+ no rejections occur, so we pass \"0\" as a placeholder \
-    python3 generate_graph.py \"$param\" \"$keygen\" \"$sign\" \"$verify\" \"0\"; \
+    echo; echo \"--- run #$i for sphincs-haraka-$VAR ---\"; \
+    ./test_timing-$VAR | tee out; \
+    kg=$(grep 'Average key generation time:' out | awk '{print $5}'); \
+    sg=$(grep 'Average signing time:'        out | awk '{print $4}'); \
+    vg=$(grep 'Average verification time:'  out | awk '{print $4}'); \
+    [ -z \"$kg\" ] && kg=0; [ -z \"$sg\" ] && sg=0; [ -z \"$vg\" ] && vg=0; \
+    python3 generate_graph.py haraka-$VAR \"$kg\" \"$sg\" \"$vg\" 0; \
+    # now move the fresh CSV + PNG into our subfolder
+    mv /results/haraka-$VAR.* /results/haraka-$VAR/; \
   done; \
 done; \
-echo 'Benchmark loop complete. Listing /results directory:'; ls -l /results; \
-echo 'Done.'"]
+echo 'All done — subdirectories under /results each contain their own CSV + plot.' \
+"]

@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 if len(sys.argv) != 6:
-    print("Usage: python3 generate_graph.py <mode> <keygen_ms> <sign_ms> <verify_ms> <rejections_placeholder>")
+    print("Usage: python3 generate_graph.py <mode> <keygen_ms> <sign_ms> <verify_ms>")
     sys.exit(1)
 
 # Read command-line arguments:
