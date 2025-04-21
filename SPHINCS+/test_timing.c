@@ -8,7 +8,7 @@
 
 #define MLEN 32
 #define CTXLEN 14
-#define NUM_RUNS 50
+#define NUM_RUNS 10
 
 // Helper function to return current time in seconds as a double.
 static inline double get_time(void) {
@@ -61,9 +61,9 @@ int main(void) {
         }
     }
 
-    printf("Average key generation time: %.3f ms\n", (total_keygen_time / NUM_RUNS) * 1000.0);
-    printf("Average signing time: %.3f ms\n", (total_sign_time / NUM_RUNS) * 1000.0);
-    printf("Average verification time: %.3f ms\n", (total_verify_time / NUM_RUNS) * 1000.0);
+    printf("Average key generation time: %.3f ms\n", (total_keygen_time) * 1000.0);
+    printf("Average signing time: %.3f ms\n", (total_sign_time) * 1000.0);
+    printf("Average verification time: %.3f ms\n", (total_verify_time) * 1000.0);
 
     return 0;
 }

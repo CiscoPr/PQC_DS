@@ -43,19 +43,24 @@ select opt in "${options[@]}"; do
             ;;
         "SPHINCS+")
             echo "Stopping any running SPHINCS+ container..."
-            docker stop sphincsplus_container 2>/dev/null
-            docker rm sphincsplus_container 2>/dev/null
+            docker stop sphincsplus_container
+            docker rm sphincsplus_container
 
             echo "Building SPHINCS+ Docker image..."
             docker build -t sphincsplus_image ./SPHINCS+
 
+            # create the local results folders
+            mkdir -p ./SPHINCS+/results_folder
+
             echo "Running SPHINCS+ container in detached mode..."
-            mkdir -p SPHINCS+/results
             docker run --cpuset-cpus="0" --name sphincsplus_container -d sphincsplus_image
 
             echo "Waiting for SPHINCS+ container to finish..."
             docker wait sphincsplus_container
 
+            # copy from container
+            echo "Copying results out of container..."
+            docker cp sphincsplus_container:/results/. ./SPHINCS+/results_folder
 
             echo "Removing SPHINCS+ container..."
             # docker rm sphincsplus_container
