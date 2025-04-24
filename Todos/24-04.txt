@@ -1,0 +1,3 @@
+- ESCREVER ESCREVER E ESCREVER NA TESE 
+- Por a correr o SPHINCS+
+- Testar aquilo das rejeições do Dilithium pondo o valor do coeficiente a 0
