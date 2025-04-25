@@ -52,7 +52,7 @@ for HASH in haraka shake sha2; do \
           -lcrypto -lrt \
           -o test_timing-$HASH-$VAR-$THASH; \
       mkdir -p /results/$HASH/$THASH/sphincs-$HASH-$VAR; \
-      for ITER in $(seq 1 10); do \
+      for ITER in $(seq 1 100); do \
         echo \"--- Iteration $ITER for $HASH-$VAR ($THASH) ---\"; \
         ./test_timing-$HASH-$VAR-$THASH | tee out; \
         kg=$(grep 'Average key generation time:' out | awk '{print $5}'); \
