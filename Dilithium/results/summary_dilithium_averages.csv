@@ -1,0 +1,4 @@
+Mode,KeyGen Time (ms),Sign Time (ms),Verify Time (ms),Avg Rejections
+2,0.09,0.444,0.103,5.06
+3,0.158,0.677,0.159,5.03
+5,0.239,0.852,0.26,3.95

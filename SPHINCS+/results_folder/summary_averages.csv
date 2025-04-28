@@ -1,10 +1,4 @@
 Hash,THash,Mode,Type,KeyGen Time (ms),Sign Time (ms),Verify Time (ms)
-haraka,robust,128f,Fast,33.77,805.82,52.45
-haraka,robust,128s,Small,2164.03,16886.53,19.76
-haraka,robust,192f,Fast,49.41,1376.92,78.13
-haraka,robust,192s,Small,3188.83,31915.92,29.74
-haraka,robust,256f,Fast,133.05,2933.82,84.12
-haraka,robust,256s,Small,2110.52,30608.63,44.67
 haraka,simple,128f,Fast,18.19,438.7,27.79
 haraka,simple,128s,Small,1160.2,9212.84,10.62
 haraka,simple,192f,Fast,27.16,761.23,41.42
