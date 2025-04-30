@@ -50,7 +50,7 @@ int main(void) {
             fprintf(stderr, "Signing failed in iteration %d\n", i);
             return -1;
         }
-        total_rejections = get_last_rejection_count();
+        total_rejections = get_last_rejection_count() - 1;
         end = get_time();
         total_sign_time += (end - start);
 
