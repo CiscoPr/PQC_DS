@@ -11,9 +11,9 @@ if len(sys.argv) != 6:
 
 # Read command-line arguments:
 mode, keygen, sign, verify, rejections = sys.argv[1:6]
-CSV_FILE = f"/results/dilithium_times_mode{mode}.csv"
-IMG_FILE = f"/results/dilithium_times_mode{mode}.png"
-RESULTS_DIR = "/results"
+CSV_FILE = f"/results_no_rej/dilithium_times_mode{mode}.csv"
+IMG_FILE = f"/results_no_rej/dilithium_times_mode{mode}.png"
+RESULTS_DIR = "/results_no_rej"
 
 def ensure_results_dir():
     if not os.path.exists(RESULTS_DIR):

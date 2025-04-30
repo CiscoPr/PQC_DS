@@ -13,9 +13,9 @@ select opt in "${options[@]}"; do
 
             echo "Running Dilithium container in detached mode..."
             # Create a local 'results' folder if it doesn't exist
-            mkdir -p Dilithium/results/mode2
-            mkdir -p Dilithium/results/mode3
-            mkdir -p Dilithium/results/mode5
+            mkdir -p Dilithium/results_no_rej/mode2
+            mkdir -p Dilithium/results_no_rej/mode3
+            mkdir -p Dilithium/results_no_rej/mode5
 
             # Run the container in detached mode with a fixed name.
             docker run --cpuset-cpus="0" --name dilithium_container -d dilithium_image
@@ -26,12 +26,12 @@ select opt in "${options[@]}"; do
             echo "Copying results from container..."
 
             # Copy the results files from the container to your host's results folder.
-            docker cp dilithium_container:/results/dilithium_times_mode2.csv Dilithium/results/mode2/dilithium_times.csv
-            docker cp dilithium_container:/results/dilithium_times_mode2.png Dilithium/results/mode2/dilithium_times.png
-            docker cp dilithium_container:/results/dilithium_times_mode3.csv Dilithium/results/mode3/dilithium_times.csv
-            docker cp dilithium_container:/results/dilithium_times_mode3.png Dilithium/results/mode3/dilithium_times.png
-            docker cp dilithium_container:/results/dilithium_times_mode5.csv Dilithium/results/mode5/dilithium_times.csv
-            docker cp dilithium_container:/results/dilithium_times_mode5.png Dilithium/results/mode5/dilithium_times.png
+            docker cp dilithium_container:/results_no_rej/dilithium_times_mode2.csv Dilithium/results_no_rej/mode2/dilithium_times.csv
+            docker cp dilithium_container:/results_no_rej/dilithium_times_mode2.png Dilithium/results_no_rej/mode2/dilithium_times.png
+            docker cp dilithium_container:/results_no_rej/dilithium_times_mode3.csv Dilithium/results_no_rej/mode3/dilithium_times.csv
+            docker cp dilithium_container:/results_no_rej/dilithium_times_mode3.png Dilithium/results_no_rej/mode3/dilithium_times.png
+            docker cp dilithium_container:/results_no_rej/dilithium_times_mode5.csv Dilithium/results_no_rej/mode5/dilithium_times.csv
+            docker cp dilithium_container:/results_no_rej/dilithium_times_mode5.png Dilithium/results_no_rej/mode5/dilithium_times.png
 
 
 

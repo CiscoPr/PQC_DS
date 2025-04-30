@@ -24,16 +24,16 @@ WORKDIR /dilithium/ref
 RUN make shared
 
 # Copy custom C source files
-COPY instrumental_sign.c test_timing.c generate_graph.py ./
+COPY no_rejection_sign.c test_timing.c generate_graph.py ./
 
 # Compile tests
-RUN gcc -O2 -DDILITHIUM_MODE=2 -o test_timing_2 test_timing.c instrumental_sign.c randombytes.c \
+RUN gcc -O2 -DDILITHIUM_MODE=2 -o test_timing_2 test_timing.c no_rejection_sign.c randombytes.c \
     -I. -I./ref -I./avx2 -L. -lpqcrystals_dilithium2_ref -lpqcrystals_fips202_ref
 
-RUN gcc -O2 -DDILITHIUM_MODE=3 -o test_timing_3 test_timing.c instrumental_sign.c randombytes.c \
+RUN gcc -O2 -DDILITHIUM_MODE=3 -o test_timing_3 test_timing.c no_rejection_sign.c randombytes.c \
     -I. -I./ref -I./avx2 -L. -lpqcrystals_dilithium3_ref -lpqcrystals_fips202_ref
 
-RUN gcc -O2 -DDILITHIUM_MODE=5 -o test_timing_5 test_timing.c instrumental_sign.c randombytes.c  \
+RUN gcc -O2 -DDILITHIUM_MODE=5 -o test_timing_5 test_timing.c no_rejection_sign.c randombytes.c  \
     -I. -I./ref -I./avx2 -L. -lpqcrystals_dilithium5_ref -lpqcrystals_fips202_ref
 
 
@@ -54,7 +54,7 @@ ENV LD_LIBRARY_PATH=/dilithium/ref
 
 # Default command (Run extensive timing tests for each mode)
 CMD ["/bin/sh", "-c", "\
-mkdir -p /results && \
+mkdir -p /results_no_rej && \
 for mode in 2 3 5; do \
   for i in $(seq 1 100); do \
     output=$(./test_timing_${mode}); \
