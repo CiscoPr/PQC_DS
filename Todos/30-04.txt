@@ -1,0 +1,5 @@
+- Testar o no_rejections em casa no PC fixo
+- Analisar os resultados do No_rejections (se se mantiverem, aumento do tempo no KeyGen e Verify; Diminuição do tempo do Signing)
+- Acabar os ataques feitos ao Dilithium e as respetivas proteções
+- Fazer a mesma coisa para o SPHINCS+
+- Testar o Falcon
