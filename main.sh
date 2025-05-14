@@ -70,14 +70,15 @@ select opt in "${options[@]}"; do
 
         "Falcon")
             echo "Stopping any running Falcon container..."
-            docker stop falcon_container
-            docker rm falcon_container
+            docker stop falcon_container 2>/dev/null
+            docker rm falcon_container 2>/dev/null
 
             echo "Building Falcon Docker image..."
             docker build -t falcon_image ./Falcon
 
-            # Create local results folder
-            mkdir -p ./Falcon/results
+            # Create local results folders
+            mkdir -p ./Falcon/results/512
+            mkdir -p ./Falcon/results/1024
 
             echo "Running Falcon container in detached mode..."
             docker run --cpuset-cpus="0" --name falcon_container -d falcon_image
@@ -90,8 +91,8 @@ select opt in "${options[@]}"; do
             docker cp falcon_container:/results/. ./Falcon/results
 
             echo "Removing Falcon container..."
-            docker rm falcon_container
-            echo "Falcon results have been downloaded to the local 'Falcon/results' folder."
+            #docker rm falcon_container
+            echo "Falcon results for both modes have been downloaded to the local 'Falcon/results' folder."
             break
             ;;
 
