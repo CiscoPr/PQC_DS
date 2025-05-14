@@ -1,34 +1,39 @@
-# Use an official Ubuntu image as the base.
+# Base Ubuntu 22.04 image
 FROM ubuntu:22.04
 
-# Install required packages: git, build-essential (for gcc, make, etc.), and libssl-dev for OpenSSL.
+# Install dependencies (gcc, make, curl, unzip)
 RUN apt-get update && apt-get install -y \
     git \
     build-essential \
     make \
     libssl-dev \
     unzip \
-    clang \
     curl \
  && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory inside the container.
+# Create Falcon working directory
 WORKDIR /falcon
 
-# Download the FALCON submission zip file.
+# Download Falcon Round-3 submission archive
 RUN curl -L -o falcon.zip https://falcon-sign.info/falcon-round3.zip
 
-# Unzip the downloaded archive and remove the zip file.
-# This should create directories like Reference_Implementation, Optimized_Implementation, KAT, Supporting_Documentation, and Extra.
+# Unzip Falcon files and remove the zip archive
 RUN unzip falcon.zip && rm falcon.zip
 
+# Set working directory to Falcon KAT implementation directory
+WORKDIR /falcon/falcon-round3/Reference_Implementation/falcon512/falcon512int
 
-# Change directory to the unified C implementation.
-# If the archive extracts to a folder named "falcon", then the unified C implementation is likely at:
-WORKDIR /falcon/falcon-round3/Extra/c
+# Build KAT generator for Falcon (kat512int executable)
+RUN make clean && make
 
-# Build the Falcon unified C implementation.
-RUN make
+# Prepare the results directory
+RUN mkdir -p /results
 
-# By default, run the self-test tool.
-#CMD ["./test_falcon"]
+# Create a script to run KAT generation and move results to /results
+RUN echo '#!/bin/bash\n\
+./build/kat512int\n\
+mv *.req *.rsp /results/' > /run_kat.sh \
+ && chmod +x /run_kat.sh
+
+# Default command to run when container starts
+CMD ["/run_kat.sh"]

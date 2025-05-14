@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 PS3="Please select which Dockerfile to build and run: "
-options=("Dilithium" "SPHINCS+" "Quit")
+options=("Dilithium" "SPHINCS+" "Falcon" "Quit")
 
 select opt in "${options[@]}"; do
     case $opt in
@@ -67,6 +67,34 @@ select opt in "${options[@]}"; do
             echo "SPHINCS+ results have been downloaded to the local 'SPHINCS+/results' folder."
             break
             ;;
+
+        "Falcon")
+            echo "Stopping any running Falcon container..."
+            docker stop falcon_container
+            docker rm falcon_container
+
+            echo "Building Falcon Docker image..."
+            docker build -t falcon_image ./Falcon
+
+            # Create local results folder
+            mkdir -p ./Falcon/results
+
+            echo "Running Falcon container in detached mode..."
+            docker run --cpuset-cpus="0" --name falcon_container -d falcon_image
+
+            echo "Waiting for Falcon container to finish..."
+            docker wait falcon_container
+
+            # Copy results from container
+            echo "Copying results out of container..."
+            docker cp falcon_container:/results/. ./Falcon/results
+
+            echo "Removing Falcon container..."
+            docker rm falcon_container
+            echo "Falcon results have been downloaded to the local 'Falcon/results' folder."
+            break
+            ;;
+
         "Quit")
             break
             ;;
