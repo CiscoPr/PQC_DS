@@ -1,6 +1,6 @@
 - Ter a certeza de que os docs do Falcon estão a fazer a análise da implementação otimizada ✅
 - Ver as cenas que faltam da semana passada:
-    - ver a documentação do Dilithium para perceber a relação entre as rejeições e o tempo:
+    - ver a documentação do Dilithium para perceber a relação entre as rejeições e o tempo:✅
         Sign(sk, M)
         05 z := ⊥
         06 while z = ⊥ do
@@ -9,7 +9,20 @@
         09     c := H(M || w1)
         10     z := y + cs1
         11     if ||z||∞ ≥ γ1 - β or ||LowBits(Ay - cs2)||∞ ≥ γ2 - β then z := ⊥
-    
+
+    "If z were directly output at this point, then the signature scheme would be insecure
+    due to the fact that the secret key would be leaked. To avoid the dependency of z on the
+    secret key, we use rejection sampling." - razão para rejection sampling
+    "β is set to be the maximum possible
+    coefficient of csi. If any coefficient of z is larger than
+    1 − β, then we reject and restart the
+    signing procedure." - primeira condição do rejection sampling
+    "Also, if any coefficient of the low-order bits of Az − ct is greater than 2 − β, we restart.
+    The first check is necessary for security, while the second is necessary for both security and correctness."
+    Analisando as condições acima, vemos que a primeira condição é rápida de checkar, visto que apenas depende de pequenas adições de vetores.
+    A segunda por outro lado, pode ser mais custosa, especialmente se a multiplicação Ay e cs_2 demorar mais tempo.
+    Portanto, algumas rejeições podem ser substancialmente mais rápidas de detetar que outras, aumentando o nº de rejeições num processo de assinatura, mas demoram menos tempo
+    que outro em que, apesar de ter menos rejeições, são, na sua maior parte, detetadas na segunda condição.
 
     - entender o pq do Haraka ser o mais lento apesar de ser teoricamente o mais rápido para inputs pequenos: estou a usar flags de compilação -mavx2 -march=haswell
     que dão enable a uma aceleração de operações com inteiros e floating-point (via AVX2) que beneficiam o SHAKE e o SHA-2. A implementação mais diferenciada do HARAKA faz com que
