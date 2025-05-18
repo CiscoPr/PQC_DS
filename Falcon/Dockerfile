@@ -28,12 +28,12 @@ COPY generate_graph.py /generate_graph.py
 # Build Falcon-512
 WORKDIR /falcon/falcon-round3/Reference_Implementation/falcon512/falcon512int
 RUN make clean && make
-RUN gcc -O2 -DFALCON_MODE=512 -o test_timing_512 ../../test_timing.c ../../katrng.c rng.c sign.c vrfy.c keygen.c codec.c common.c fft.c fpr.c shake.c nist.c -I. -I../../
+RUN gcc -O3 -march=skylake -DFALCON_MODE=512 -o test_timing_512 ../../test_timing.c ../../katrng.c rng.c sign.c vrfy.c keygen.c codec.c common.c fft.c fpr.c shake.c nist.c -I. -I../../
 
 # Build Falcon-1024
 WORKDIR /falcon/falcon-round3/Reference_Implementation/falcon1024/falcon1024int
 RUN make clean && make
-RUN gcc -O2 -DFALCON_MODE=1024 -o test_timing_1024 ../../test_timing.c ../../katrng.c rng.c sign.c vrfy.c keygen.c codec.c common.c fft.c fpr.c shake.c nist.c -I. -I../../
+RUN gcc -O3 -march=skylake -DFALCON_MODE=1024 -o test_timing_1024 ../../test_timing.c ../../katrng.c rng.c sign.c vrfy.c keygen.c codec.c common.c fft.c fpr.c shake.c nist.c -I. -I../../
 
 # Prepare results folder
 RUN mkdir -p /results/512 /results/1024

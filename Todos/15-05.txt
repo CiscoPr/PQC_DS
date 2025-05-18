@@ -1,3 +1,3 @@
-- Ter a certeza de que os docs do Falcon estão a fazer a análise da implementação otimizada
-- Ver as cenas que faltam da semana passada
+- Ter a certeza de que os docs do Falcon estão a fazer a análise da implementação otimizada ✅
+- Ver as cenas que faltam da semana passada 
 - Escrever na Tese sobre o Falcon

@@ -1,3 +1,3 @@
 - ver a documentação do Dilithium para perceber a relação entre as rejeições e o tempo
 - entender o pq do Haraka ser o mais lento apesar de ser teoricamente o mais rápido para inputs pequenos
-- ter o tamanho da chave privada do Falcon
+- ter o tamanho da chave privada do Falcon ✅
