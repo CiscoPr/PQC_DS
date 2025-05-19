@@ -40,9 +40,7 @@ for HASH in haraka shake sha2; do \
       elif [ \"$HASH\" = \"sha2\" ]; then \
         HASH_C=\"sha2.c hash_sha2.c\"; THASH_C=\"thash_sha2_${THASH}.c\"; \
       fi; \
-      gcc -mavx2 -march=haswell \
-          -Wall -Wextra -Wpedantic -O3 -std=c99 \
-          -Wconversion -Wmissing-prototypes \
+      gcc -O2 \
           -DPARAMS=sphincs-$HASH-$VAR -DTHASH=$THASH \
           -I. \
           test_timing.c \
