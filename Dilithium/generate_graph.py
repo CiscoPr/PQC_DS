@@ -5,12 +5,12 @@ import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 
-if len(sys.argv) != 6:
-    print("Usage: python3 generate_graph.py <mode> <keygen_ms> <sign_ms> <verify_ms> <rejections>")
+if len(sys.argv) != 7:
+    print("Usage: python3 generate_graph.py <mode> <keygen_ms> <sign_ms> <verify_ms> <slow_rej> <fast_rej>")
     sys.exit(1)
 
 # Read command-line arguments:
-mode, keygen, sign, verify, rejections = sys.argv[1:6]
+mode, keygen, sign, verify, slow_rej, fast_rej = sys.argv[1:7]
 CSV_FILE = f"/results/dilithium_times_mode{mode}.csv"
 IMG_FILE = f"/results/dilithium_times_mode{mode}.png"
 RESULTS_DIR = "/results"
@@ -20,18 +20,18 @@ def ensure_results_dir():
         os.makedirs(RESULTS_DIR)
         print(f"Created directory: {RESULTS_DIR}")
 
-def append_data(mode, keygen, sign, verify, rejections):
+def append_data(mode, keygen, sign, verify, slow_rej, fast_rej):
     ensure_results_dir()
-    # If CSV doesn't exist, create it with a header including the rejections field
+    # If CSV doesn't exist, create it with a header including both rejection fields
     if not os.path.exists(CSV_FILE):
         with open(CSV_FILE, 'w') as f:
-            f.write("timestamp,mode,keygen,sign,verify,rejections\n")
+            f.write("timestamp,mode,keygen,sign,verify,slow_rej,fast_rej\n")
             print(f"Created new CSV file: {CSV_FILE}")
     # Append a new row with current timestamp and provided values
     now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(CSV_FILE, 'a') as f:
-        f.write(f"{now_str},{mode},{keygen},{sign},{verify},{rejections}\n")
-    print(f"Appended data: {now_str},{mode},{keygen},{sign},{verify},{rejections}")
+        f.write(f"{now_str},{mode},{keygen},{sign},{verify},{slow_rej},{fast_rej}\n")
+    print(f"Appended data: {now_str},{mode},{keygen},{sign},{verify},{slow_rej},{fast_rej}")
 
 def generate_graph():
     try:
@@ -50,20 +50,20 @@ def generate_graph():
 
     plt.figure(figsize=(10, 6))
     ax1 = plt.gca()
-    # Plot KeyGen, Sign, and Verify times (ms) on the primary y-axis.
+
+    # Plot KeyGen, Sign, and Verify times (ms) on primary y-axis
     ax1.plot(df['run'], df['keygen'], marker='o', label='KeyGen (ms)')
     ax1.plot(df['run'], df['sign'], marker='x', label='Sign (ms)')
     ax1.plot(df['run'], df['verify'], marker='s', label='Verify (ms)')
-    ax1.set_ylabel('Time (ms)')
+    ax1.set_ylabel('Time (ms)', color='black')
 
-    # Create a secondary y-axis for rejections.
+    # Create secondary y-axis for rejections
     ax2 = ax1.twinx()
-    ax2.plot(df['run'], df['rejections'], marker='^', color='gray', linestyle='--', label='Rejections')
-    ax2.set_ylabel('Rejections')
+    ax2.plot(df['run'], df['slow_rej'], marker='^', color='red', linestyle='--', label='Slow Rejections')
+    ax2.plot(df['run'], df['fast_rej'], marker='v', color='blue', linestyle=':', label='Fast Rejections')
+    ax2.set_ylabel('Rejections', color='black')
 
-    plt.title(f'Dilithium Mode {mode} Timing & Rejections Over Runs')
-    # Optionally hide x-axis labels if desired:
-    # plt.gca().axes.get_xaxis().set_visible(False)
+    plt.title(f'Dilithium Mode {mode} - Timing and Rejections per Run')
 
     # Combine legends from both axes
     lines1, labels1 = ax1.get_legend_handles_labels()
@@ -76,7 +76,7 @@ def generate_graph():
     print(f"Graph updated and saved to {IMG_FILE}")
 
 def main():
-    append_data(mode, keygen, sign, verify, rejections)
+    append_data(mode, keygen, sign, verify, slow_rej, fast_rej)
     generate_graph()
 
 if __name__ == '__main__':

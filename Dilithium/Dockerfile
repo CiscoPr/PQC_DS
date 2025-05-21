@@ -63,12 +63,15 @@ for mode in 2 3 5; do \
     keygen=$(echo \"$output\" | grep 'Average key generation time:' | awk '{print $5}'); \
     sign=$(echo \"$output\" | grep 'Average signing time:' | awk '{print $4}'); \
     verify=$(echo \"$output\" | grep 'Average verification time:' | awk '{print $4}'); \
-    rejections=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $4}'); \
+    slow_rej=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $4}'); \
+    fast_rej=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $7}'); \
     [ -z \"$keygen\" ] && keygen=\"0.00\"; \
     [ -z \"$sign\" ] && sign=\"0.00\"; \
     [ -z \"$verify\" ] && verify=\"0.00\"; \
-    [ -z \"$rejections\" ] && rejections=\"0\"; \
-    python3 generate_graph.py \"$mode\" \"$keygen\" \"$sign\" \"$verify\" \"$rejections\"; \
+    [ -z \"$slow_rej\" ] && slow_rej=\"0\"; \
+    [ -z \"$fast_rej\" ] && fast_rej=\"0\"; \
+    python3 generate_graph.py \"$mode\" \"$keygen\" \"$sign\" \"$verify\" \"$slow_rej\" \"$fast_rej\"; \
   done; \
 done; \
 echo 'Timing tests complete. Check /results for CSV and graphs.'"]
+

@@ -16,7 +16,8 @@ static inline double get_time(void) {
     return ts.tv_sec + ts.tv_nsec / 1e9;
 }
 
-extern int get_last_rejection_count(void);
+extern int get_last_slow_rejection_count(void);
+extern int get_last_fast_rejection_count(void);
 
 int main(void) {
     uint8_t pk[CRYPTO_PUBLICKEYBYTES];
@@ -33,7 +34,9 @@ int main(void) {
     double total_keygen_time = 0.0;
     double total_sign_time   = 0.0;
     double total_verify_time = 0.0;
-    int total_rejections = 0;
+    int total_slow_rejections = 0;
+    int total_fast_rejections = 0;
+
 
     for (int i = 0; i < NUM_RUNS; i++) {
         // Generate a random message.
@@ -50,7 +53,8 @@ int main(void) {
             fprintf(stderr, "Signing failed in iteration %d\n", i);
             return -1;
         }
-        total_rejections = get_last_rejection_count();
+        total_slow_rejections = get_last_slow_rejection_count();
+        total_fast_rejections = get_last_fast_rejection_count();
         end = get_time();
         total_sign_time += (end - start);
 
@@ -69,7 +73,7 @@ int main(void) {
     printf("Average key generation time: %.3f ms\n", (total_keygen_time / NUM_RUNS) * 1000.0);
     printf("Average signing time: %.3f ms\n", (total_sign_time / NUM_RUNS) * 1000.0);
     printf("Average verification time: %.3f ms\n", (total_verify_time / NUM_RUNS) * 1000.0);
-    printf("Number of rejections: %d\n", total_rejections);
+    printf("Number of rejections: %d slow and %d fast", total_slow_rejections, total_fast_rejections);
 
 
     return 0;

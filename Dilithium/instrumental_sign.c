@@ -10,9 +10,15 @@
 #include "fips202.h"
 
 
-static int last_rejection_count = 0;
-int get_last_rejection_count(void) {
-    return last_rejection_count;
+static int last_slow_rejection_count = 0;
+static int last_fast_rejection_count = 0;
+
+int get_last_slow_rejection_count(void) {
+    return last_slow_rejection_count;
+}
+
+int get_last_fast_rejection_count(void) {
+    return last_fast_rejection_count;
 }
 
 
@@ -33,7 +39,8 @@ int crypto_sign_signature_internal(uint8_t *sig,
     polyveck t0, s2, w1, w0, h;
     poly cp;
     keccak_state state;
-    int rejection_count = 0; // Initialize rejection counter
+    int slow_rejection_count = 0; // Initialize slow rejection counter
+    int fast_rejection_count = 0; // Initialize fast rejection counter
 
     rho = seedbuf;
     tr = rho + SEEDBYTES;
@@ -65,7 +72,6 @@ int crypto_sign_signature_internal(uint8_t *sig,
     polyveck_ntt(&t0);
 
 rej:
-    rejection_count++; // Increment every time we retry
 
     /* Sample intermediate vector y */
     polyvecl_uniform_gamma1(&y, rhoprime, nonce++);
@@ -95,8 +101,11 @@ rej:
     polyvecl_invntt_tomont(&z);
     polyvecl_add(&z, &z, &y);
     polyvecl_reduce(&z);
-    if (polyvecl_chknorm(&z, GAMMA1 - BETA))
+    // FAST REJ
+    if (polyvecl_chknorm(&z, GAMMA1 - BETA)){
+        fast_rejection_count++;
         goto rej;
+    }
 
     /* Check that subtracting cs2 does not change high bits of w and low bits
      * do not reveal secret information */
@@ -104,8 +113,11 @@ rej:
     polyveck_invntt_tomont(&h);
     polyveck_sub(&w0, &w0, &h);
     polyveck_reduce(&w0);
-    if (polyveck_chknorm(&w0, GAMMA2 - BETA))
+    //SLOW REJ
+    if (polyveck_chknorm(&w0, GAMMA2 - BETA)){
+        slow_rejection_count++;
         goto rej;
+    }
 
     /* Compute hints for w1 */
     polyveck_pointwise_poly_montgomery(&h, &cp, &t0);
@@ -123,7 +135,8 @@ rej:
     pack_sig(sig, sig, &z, &h);
     *siglen = CRYPTO_BYTES;
 
-    last_rejection_count = rejection_count;
+    last_slow_rejection_count = slow_rejection_count;
+    last_fast_rejection_count = fast_rejection_count;
 
 
     return 0;
