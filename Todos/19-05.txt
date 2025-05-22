@@ -1,0 +1,40 @@
+-analisar os papers de comparação:
+    "Performance and Applicability of Post-Quantum Digital Signature Algorithms in Resource-Constrained Environments":
+    - Compares the 3 solutions (Dilithium, Falcon and SPHINCS+) in terms of performance, key and signature sizes and suitability for constrained platforms such as IoT devices,
+      smart cards, Vehicle-to-vehicle (V2V) systems and blockchains
+    - Dilithium: Strong CCA resistance; simpler and less error-prone implementation; safer and easier to verify implementation correctness
+                "Significantly higher speed and significantly smaller size compared to hash-based schemes " -page 2
+                 Pros: simple and secure, good performance in constrained environments, excelent energy efficiency, easier to mask against side-channel Attacks
+                 Cons: larger signatures than Falcon, not ideal where bandwidth is strictly limited
+    - Falcon: very small key and signature sizes
+              Pros: fast verification, bandwidth efficient, well studied in terms of side-channel resilience, best for bulk signature verification use cases
+              Cons: because of floating-point arithmetic it's harder to implement securely; keygen and signature are complex,  difficult to mask, not suitable for highly memory-limited devices
+    - SPHINCS+: security relies entirely on the hash function used; has a very conservative design, assuming minimal risk from quantum Attacks
+                Pros: simple security assumptions, easy to analyze against classical and quantum attacks, compact keys, resistant to all known lattice attacks
+                Cons: large signature sizes, slow signing and verification and impractical for tight-bandwidth or latency-sensitive systems
+    
+    "Performance Analysis of Post-Quantum Cryptography Algorithms for Digital Signature":
+    - Compares the 3 solutions, focusing on keypair generation, file signing and signature verification and the results are compared against the RSA to assess feasibility in real-world applications
+    - Keypair Generation Time:
+      - Best: Dilithium
+      - Worst: e SPHINCS+SHA-192s-simple and SPHINCS+SHAKE-192s-simple
+      - Falcon shows a large gap between Falcon-512 (891 µs) and Falcon-1024 (2031 µs)
+    - File Signing Time: average execution time obtained by each algorithm when signing files of size 10 MB, 100 MB, and 1 GB, respectively.
+      - Best: Dilithium and Falcon
+      - SPHINCS+ 'f' variants are faster than 's' but signature sizes are much larger
+      Performance difference shrinks with increasing file size.
+    - Verification Time:
+      - SPHINCS+ SHA2-192/256 variants unexpectedly outperform Falcon and Dilithium for 10MB verification.
+      - “For signing large-sized files, algorithms with an ‘s’ suffix would be a better choice.”
+    - In comparison to RSA, despite having about a 27.7% time overhead, Dilithium offers quantum resistance and higher security: 
+        "Dilithium algorithms, including the best one—labelled Dilithium5, appear to be suitable candidates for replacing RSA."
+
+    
+    "A Meta-Analysis on NIST Post-Quantum Cryptographic Primitive Finalists"
+    - Assesses security, performance (key sizes and processing times) and suitability for aplications of the 3 solutions (including Kyber, but we will ignore this one)
+    - "Dilithium stood out as the most efficient in terms of the public key size to encryption time ratio.”
+    - Private key size: “FALCON 1024 claimed the top spot, indicating superior efficiency in scenarios where minimizing the private key size is crucial.”
+    - Bandwidth usage:
+      - Dilithium: best for resource-constrained devices due to compactness
+      - SPHINCS+: large signatures, higher bandwidth
+      - FALCON: compact and secure but implementation is complex
