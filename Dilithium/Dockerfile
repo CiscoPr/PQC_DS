@@ -56,10 +56,14 @@ ENV LD_LIBRARY_PATH=/dilithium/ref
 CMD ["/bin/sh", "-c", "\
 mkdir -p /results && \
 for mode in 2 3 5; do \
+  echo 'rejection_label,time_us' > /results/rejection_log_mode${mode}.csv && \
   for i in $(seq 1 100); do \
+    REJECTION_LOG=/tmp/rejection_log.csv; \
+    echo 'rejection_label,time_us' > $REJECTION_LOG; \
     output=$(./test_timing_${mode}); \
     echo \"Mode $mode, iteration $i output:\"; \
     echo \"$output\"; \
+    cp $REJECTION_LOG /results/rejection_log_mode${mode}_iter${i}.csv; \
     keygen=$(echo \"$output\" | grep 'Average key generation time:' | awk '{print $5}'); \
     sign=$(echo \"$output\" | grep 'Average signing time:' | awk '{print $4}'); \
     verify=$(echo \"$output\" | grep 'Average verification time:' | awk '{print $4}'); \
@@ -71,7 +75,10 @@ for mode in 2 3 5; do \
     [ -z \"$slow_rej\" ] && slow_rej=\"0\"; \
     [ -z \"$fast_rej\" ] && fast_rej=\"0\"; \
     python3 generate_graph.py \"$mode\" \"$keygen\" \"$sign\" \"$verify\" \"$slow_rej\" \"$fast_rej\"; \
+    cat $REJECTION_LOG >> /results/rejection_log_mode${mode}.csv; \
   done; \
+  echo \"\nAverage rejection times for mode $mode:\"; \
+  awk -F',' 'NR>1 {sum[$1]+=$2; count[$1]++} END {for (k in sum) printf \"%s avg: %.2f us\\n\", k, sum[k]/count[k]}' /results/rejection_log_mode${mode}.csv; \
 done; \
 echo 'Timing tests complete. Check /results for CSV and graphs.'"]
 

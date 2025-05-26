@@ -1,0 +1,1 @@
+- tentar por counters para todos os os ifs, ver as médias, e dividir em rejeições rápidas, lentas, etc

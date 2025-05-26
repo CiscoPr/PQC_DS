@@ -41,6 +41,7 @@ int crypto_sign_signature_internal(uint8_t *sig,
     keccak_state state;
     int slow_rejection_count = 0; // Initialize slow rejection counter
     int fast_rejection_count = 0; // Initialize fast rejection counter
+    int 
 
     rho = seedbuf;
     tr = rho + SEEDBYTES;
@@ -123,13 +124,17 @@ rej:
     polyveck_pointwise_poly_montgomery(&h, &cp, &t0);
     polyveck_invntt_tomont(&h);
     polyveck_reduce(&h);
-    if (polyveck_chknorm(&h, GAMMA2))
+    if (polyveck_chknorm(&h, GAMMA2)){
+        slow_rejection_count++;
         goto rej;
+    }
 
     polyveck_add(&w0, &w0, &h);
     n = polyveck_make_hint(&h, &w0, &w1);
-    if (n > OMEGA)
+    if (n > OMEGA){
+        slow_rejection_count++;
         goto rej;
+    }
 
     /* Write signature */
     pack_sig(sig, sig, &z, &h);

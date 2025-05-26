@@ -26,6 +26,6 @@
 
     - entender o pq do Haraka ser o mais lento apesar de ser teoricamente o mais rápido para inputs pequenos: estou a usar flags de compilação -mavx2 -march=haswell
     que dão enable a uma aceleração de operações com inteiros e floating-point (via AVX2) que beneficiam o SHAKE e o SHA-2. A implementação mais diferenciada do HARAKA faz com que
-    o mesmo não beneficie da mesma. Compilar de novo sem essas flags?
+    o mesmo não beneficie da mesma. Compilar de novo sem essas flags? ✅
 
 - Escrever na Tese sobre o Falcon
