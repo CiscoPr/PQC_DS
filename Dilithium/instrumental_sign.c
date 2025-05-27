@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <time.h>
 #include "params.h"
 #include "sign.h"
 #include "packing.h"
@@ -12,6 +13,10 @@
 
 static int last_slow_rejection_count = 0;
 static int last_fast_rejection_count = 0;
+static uint64_t total_z_time = 0, z_count = 0;
+static uint64_t total_lowbits_time = 0, lowbits_count = 0;
+static uint64_t total_hintnorm_time = 0, hintnorm_count = 0;
+static uint64_t total_hintcount_time = 0, hintcount_count = 0;
 
 int get_last_slow_rejection_count(void) {
     return last_slow_rejection_count;
@@ -19,6 +24,21 @@ int get_last_slow_rejection_count(void) {
 
 int get_last_fast_rejection_count(void) {
     return last_fast_rejection_count;
+}
+
+
+static inline uint64_t get_time_us() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return ((uint64_t)ts.tv_sec * 1000000ULL) + (ts.tv_nsec / 1000ULL);
+}
+
+static void log_rejection_time(const char* label, uint64_t duration_us) {
+    FILE* f = fopen("/tmp/rejection_log.csv", "a");
+    if (f) {
+        fprintf(f, "%s,%llu\n", label, (unsigned long long)duration_us);
+        fclose(f);
+    }
 }
 
 
@@ -41,7 +61,6 @@ int crypto_sign_signature_internal(uint8_t *sig,
     keccak_state state;
     int slow_rejection_count = 0; // Initialize slow rejection counter
     int fast_rejection_count = 0; // Initialize fast rejection counter
-    int 
 
     rho = seedbuf;
     tr = rho + SEEDBYTES;
@@ -103,8 +122,11 @@ rej:
     polyvecl_add(&z, &z, &y);
     polyvecl_reduce(&z);
     // FAST REJ
+    uint64_t t_rej = get_time_us();
     if (polyvecl_chknorm(&z, GAMMA1 - BETA)){
-        fast_rejection_count++;
+        //fast_rejection_count++;
+        total_z_time += (get_time_us() - t_rej);
+        z_count++;
         goto rej;
     }
 
@@ -115,8 +137,11 @@ rej:
     polyveck_sub(&w0, &w0, &h);
     polyveck_reduce(&w0);
     //SLOW REJ
+    t_rej = get_time_us();
     if (polyveck_chknorm(&w0, GAMMA2 - BETA)){
-        slow_rejection_count++;
+        total_lowbits_time += (get_time_us() - t_rej);
+        lowbits_count++;
+        //slow_rejection_count++;
         goto rej;
     }
 
@@ -124,15 +149,21 @@ rej:
     polyveck_pointwise_poly_montgomery(&h, &cp, &t0);
     polyveck_invntt_tomont(&h);
     polyveck_reduce(&h);
+    t_rej = get_time_us();
     if (polyveck_chknorm(&h, GAMMA2)){
-        slow_rejection_count++;
+        //slow_rejection_count++;
+        total_hintnorm_time += (get_time_us() - t_rej);
+        hintnorm_count++;
         goto rej;
     }
 
     polyveck_add(&w0, &w0, &h);
     n = polyveck_make_hint(&h, &w0, &w1);
+    t_rej = get_time_us();
     if (n > OMEGA){
-        slow_rejection_count++;
+        total_hintcount_time += (get_time_us() - t_rej);
+        hintcount_count++;
+        //slow_rejection_count++;
         goto rej;
     }
 
@@ -140,9 +171,24 @@ rej:
     pack_sig(sig, sig, &z, &h);
     *siglen = CRYPTO_BYTES;
 
-    last_slow_rejection_count = slow_rejection_count;
-    last_fast_rejection_count = fast_rejection_count;
+    //last_slow_rejection_count = slow_rejection_count;
+    //last_fast_rejection_count = fast_rejection_count;
 
+    FILE *f = fopen("/results/rejection_timings.csv", "w");
+    if (f) {
+        fprintf(f, "rejection_label,avg_time_us\n");
+
+        if (z_count)
+            fprintf(f, "z_norm,%.5f\n", (double)total_z_time/z_count);
+        if (lowbits_count)
+            fprintf(f, "lowbits,%.5f\n", (double)total_lowbits_time/lowbits_count);
+        if (hintnorm_count)
+            fprintf(f, "hint_norm,%.5f\n", (double)total_hintnorm_time/hintnorm_count);
+        if (hintcount_count)
+            fprintf(f, "hint_count,%.5f\n", (double)total_hintcount_time/hintcount_count);
+
+        fclose(f);
+    }
 
     return 0;
 }
