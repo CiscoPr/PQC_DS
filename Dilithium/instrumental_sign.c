@@ -10,6 +10,12 @@
 #include "symmetric.h"
 #include "fips202.h"
 
+// Add near other global counters
+static uint64_t total_z_overhead = 0, z_overhead_count = 0;
+static uint64_t total_lowbits_overhead = 0, lowbits_overhead_count = 0;
+static uint64_t total_hintnorm_overhead = 0, hintnorm_overhead_count = 0;
+static uint64_t total_hintcount_overhead = 0, hintcount_overhead_count = 0;
+
 
 static int last_slow_rejection_count = 0;
 static int last_fast_rejection_count = 0;
@@ -91,7 +97,10 @@ int crypto_sign_signature_internal(uint8_t *sig,
     polyveck_ntt(&s2);
     polyveck_ntt(&t0);
 
+    uint64_t loop_start_time = get_time_us();
 rej:
+    loop_start_time = get_time_us();  // Reset at start of each attempt
+
 
     /* Sample intermediate vector y */
     polyvecl_uniform_gamma1(&y, rhoprime, nonce++);
@@ -127,6 +136,8 @@ rej:
         //fast_rejection_count++;
         total_z_time += (get_time_us() - t_rej);
         z_count++;
+        total_z_overhead += (get_time_us() - loop_start_time);
+        z_overhead_count++;
         goto rej;
     }
 
@@ -141,6 +152,8 @@ rej:
     if (polyveck_chknorm(&w0, GAMMA2 - BETA)){
         total_lowbits_time += (get_time_us() - t_rej);
         lowbits_count++;
+        total_lowbits_overhead += (get_time_us() - loop_start_time);
+        lowbits_overhead_count++;
         //slow_rejection_count++;
         goto rej;
     }
@@ -154,6 +167,8 @@ rej:
         //slow_rejection_count++;
         total_hintnorm_time += (get_time_us() - t_rej);
         hintnorm_count++;
+        total_hintnorm_overhead += (get_time_us() - loop_start_time);
+        hintnorm_overhead_count++;
         goto rej;
     }
 
@@ -163,6 +178,8 @@ rej:
     if (n > OMEGA){
         total_hintcount_time += (get_time_us() - t_rej);
         hintcount_count++;
+        total_hintcount_overhead += (get_time_us() - loop_start_time);
+        hintcount_overhead_count++;
         //slow_rejection_count++;
         goto rej;
     }
@@ -180,13 +197,24 @@ rej:
 
         if (z_count)
             fprintf(f, "z_norm,%.5f\n", (double)total_z_time/z_count);
+        if (z_overhead_count)
+            fprintf(f, "z_norm_overhead,%.5f\n", (double)total_z_overhead/z_overhead_count);
+        
         if (lowbits_count)
             fprintf(f, "lowbits,%.5f\n", (double)total_lowbits_time/lowbits_count);
+        if (lowbits_overhead_count)
+            fprintf(f, "lowbits_overhead,%.5f\n", (double)total_lowbits_overhead/lowbits_overhead_count);
+        
         if (hintnorm_count)
             fprintf(f, "hint_norm,%.5f\n", (double)total_hintnorm_time/hintnorm_count);
+        if (hintnorm_overhead_count)
+            fprintf(f, "hint_norm_overhead,%.5f\n", (double)total_hintnorm_overhead/hintnorm_overhead_count);
+        
         if (hintcount_count)
             fprintf(f, "hint_count,%.5f\n", (double)total_hintcount_time/hintcount_count);
-
+        if (hintcount_overhead_count)
+            fprintf(f, "hint_count_overhead,%.5f\n", (double)total_hintcount_overhead/hintcount_overhead_count);
+        
         fclose(f);
     }
 

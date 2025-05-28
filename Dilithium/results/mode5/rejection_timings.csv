@@ -1,3 +1,5 @@
 rejection_label,avg_time_us
-z_norm,0.50000
-lowbits,0.54054
+z_norm,0.78125
+z_norm_overhead,234.84375
+lowbits,0.89796
+lowbits_overhead,293.85714
