@@ -60,8 +60,8 @@ def generate_graph():
     ax2.plot(df['run'], df['lowbits'], marker='v', linestyle='--', color='tab:blue', label='lowbits')
     ax2.plot(df['run'], df['hintnorm'], marker='>', linestyle='--', color='tab:green', label='hintnorm')
     ax2.plot(df['run'], df['hintcount'], marker='<', linestyle='--', color='tab:purple', label='hintcount')
-    ax2.set_ylabel('Rejections (count)', color='black')
-
+    ax2.set_ylabel('Rejection Count (per run)', color='black')
+    
     plt.title(f'Dilithium Mode {mode} - Timing and Rejections per Run')
 
     # Combine legends

@@ -67,7 +67,7 @@ for mode in 2 3 5; do \
     znorm=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $4}'); \
     lowbits=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $6}'); \
     hintnorm=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $8}'); \
-    hintcount=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $10}'); \
+    hintcount=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $11}'); \
     [ -z \"$keygen\" ] && keygen=\"0.00\"; \
     [ -z \"$sign\" ] && sign=\"0.00\"; \
     [ -z \"$verify\" ] && verify=\"0.00\"; \
