@@ -17,21 +17,31 @@ static uint64_t total_hintnorm_overhead = 0, hintnorm_overhead_count = 0;
 static uint64_t total_hintcount_overhead = 0, hintcount_overhead_count = 0;
 
 
-static int last_slow_rejection_count = 0;
-static int last_fast_rejection_count = 0;
+static int last_znorm_rejection_count = 0;
+static int last_lowbits_rejection_count = 0;
+static int last_hitnorm_rejection_count = 0;
+static int last_hitcount_rejection_count = 0;
+
 static uint64_t total_z_time = 0, z_count = 0;
 static uint64_t total_lowbits_time = 0, lowbits_count = 0;
 static uint64_t total_hintnorm_time = 0, hintnorm_count = 0;
 static uint64_t total_hintcount_time = 0, hintcount_count = 0;
 
-int get_last_slow_rejection_count(void) {
-    return last_slow_rejection_count;
+int get_last_znorm_rejection_count(void) {
+    return last_znorm_rejection_count;
 }
 
-int get_last_fast_rejection_count(void) {
-    return last_fast_rejection_count;
+int get_last_lowbits_rejection_count(void) {
+    return last_lowbits_rejection_count;
 }
 
+int get_last_hitnorm_rejection_count(void) {
+    return last_hitnorm_rejection_count;
+}
+
+int get_last_hitcount_rejection_count(void) {
+    return last_hitcount_rejection_count;
+}
 
 static inline uint64_t get_time_us() {
     struct timespec ts;
@@ -65,8 +75,10 @@ int crypto_sign_signature_internal(uint8_t *sig,
     polyveck t0, s2, w1, w0, h;
     poly cp;
     keccak_state state;
-    int slow_rejection_count = 0; // Initialize slow rejection counter
-    int fast_rejection_count = 0; // Initialize fast rejection counter
+    int znorm_rejection_count = 0; // Initialize znorm rejection counter
+    int lowbits_rejection_count = 0; // Initialize lowbits rejection counter
+    int hitnorm_rejection_count = 0; // Initialize hitnorm rejection counter
+    int hitcount_rejection_count = 0; // Initialize hitcount rejection counter
 
     rho = seedbuf;
     tr = rho + SEEDBYTES;
@@ -130,10 +142,10 @@ rej:
     polyvecl_invntt_tomont(&z);
     polyvecl_add(&z, &z, &y);
     polyvecl_reduce(&z);
-    // FAST REJ
+    // ZNORM
     uint64_t t_rej = get_time_us();
     if (polyvecl_chknorm(&z, GAMMA1 - BETA)){
-        //fast_rejection_count++;
+        znorm_rejection_count++;
         total_z_time += (get_time_us() - t_rej);
         z_count++;
         total_z_overhead += (get_time_us() - loop_start_time);
@@ -147,14 +159,14 @@ rej:
     polyveck_invntt_tomont(&h);
     polyveck_sub(&w0, &w0, &h);
     polyveck_reduce(&w0);
-    //SLOW REJ
+    //LOWBITS
     t_rej = get_time_us();
     if (polyveck_chknorm(&w0, GAMMA2 - BETA)){
         total_lowbits_time += (get_time_us() - t_rej);
         lowbits_count++;
         total_lowbits_overhead += (get_time_us() - loop_start_time);
         lowbits_overhead_count++;
-        //slow_rejection_count++;
+        lowbits_rejection_count++;
         goto rej;
     }
 
@@ -163,8 +175,9 @@ rej:
     polyveck_invntt_tomont(&h);
     polyveck_reduce(&h);
     t_rej = get_time_us();
+    // HITNORM
     if (polyveck_chknorm(&h, GAMMA2)){
-        //slow_rejection_count++;
+        hitnorm_rejection_count++;
         total_hintnorm_time += (get_time_us() - t_rej);
         hintnorm_count++;
         total_hintnorm_overhead += (get_time_us() - loop_start_time);
@@ -175,12 +188,13 @@ rej:
     polyveck_add(&w0, &w0, &h);
     n = polyveck_make_hint(&h, &w0, &w1);
     t_rej = get_time_us();
+    //HITCOUNT
     if (n > OMEGA){
         total_hintcount_time += (get_time_us() - t_rej);
         hintcount_count++;
         total_hintcount_overhead += (get_time_us() - loop_start_time);
         hintcount_overhead_count++;
-        //slow_rejection_count++;
+        hitcount_rejection_count++;
         goto rej;
     }
 
@@ -188,8 +202,11 @@ rej:
     pack_sig(sig, sig, &z, &h);
     *siglen = CRYPTO_BYTES;
 
-    //last_slow_rejection_count = slow_rejection_count;
-    //last_fast_rejection_count = fast_rejection_count;
+    last_znorm_rejection_count = znorm_rejection_count;
+    last_lowbits_rejection_count = lowbits_rejection_count;
+
+    last_hitnorm_rejection_count = hitnorm_rejection_count;
+    last_hitcount_rejection_count = hitcount_rejection_count;
 
     FILE *f = fopen("/results/rejection_timings.csv", "w");
     if (f) {

@@ -5,12 +5,12 @@ import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 
-if len(sys.argv) != 7:
-    print("Usage: python3 generate_graph.py <mode> <keygen_ms> <sign_ms> <verify_ms> <slow_rej> <fast_rej>")
+if len(sys.argv) != 9:
+    print("Usage: python3 generate_graph.py <mode> <keygen_ms> <sign_ms> <verify_ms> <znorm_rej> <lowbits_rej> <hintnorm_rej> <hintcount_rej>")
     sys.exit(1)
 
-# Read command-line arguments:
-mode, keygen, sign, verify, slow_rej, fast_rej = sys.argv[1:7]
+# Read command-line arguments
+mode, keygen, sign, verify, znorm, lowbits, hintnorm, hintcount = sys.argv[1:9]
 CSV_FILE = f"/results/dilithium_times_mode{mode}.csv"
 IMG_FILE = f"/results/dilithium_times_mode{mode}.png"
 RESULTS_DIR = "/results"
@@ -20,18 +20,16 @@ def ensure_results_dir():
         os.makedirs(RESULTS_DIR)
         print(f"Created directory: {RESULTS_DIR}")
 
-def append_data(mode, keygen, sign, verify, slow_rej, fast_rej):
+def append_data():
     ensure_results_dir()
-    # If CSV doesn't exist, create it with a header including both rejection fields
     if not os.path.exists(CSV_FILE):
         with open(CSV_FILE, 'w') as f:
-            f.write("timestamp,mode,keygen,sign,verify,slow_rej,fast_rej\n")
+            f.write("timestamp,mode,keygen,sign,verify,znorm,lowbits,hintnorm,hintcount\n")
             print(f"Created new CSV file: {CSV_FILE}")
-    # Append a new row with current timestamp and provided values
     now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(CSV_FILE, 'a') as f:
-        f.write(f"{now_str},{mode},{keygen},{sign},{verify},{slow_rej},{fast_rej}\n")
-    print(f"Appended data: {now_str},{mode},{keygen},{sign},{verify},{slow_rej},{fast_rej}")
+        f.write(f"{now_str},{mode},{keygen},{sign},{verify},{znorm},{lowbits},{hintnorm},{hintcount}\n")
+    print(f"Appended data: {now_str},{mode},{keygen},{sign},{verify},{znorm},{lowbits},{hintnorm},{hintcount}")
 
 def generate_graph():
     try:
@@ -44,31 +42,32 @@ def generate_graph():
         print("CSV is empty, nothing to plot.")
         return
 
-    # Sort data by timestamp and create a "run" index (1,2,3,...)
     df.sort_values('timestamp', inplace=True)
     df['run'] = range(1, len(df) + 1)
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 7))
     ax1 = plt.gca()
 
-    # Plot KeyGen, Sign, and Verify times (ms) on primary y-axis
+    # Primary Y-axis: timing
     ax1.plot(df['run'], df['keygen'], marker='o', label='KeyGen (ms)')
     ax1.plot(df['run'], df['sign'], marker='x', label='Sign (ms)')
     ax1.plot(df['run'], df['verify'], marker='s', label='Verify (ms)')
     ax1.set_ylabel('Time (ms)', color='black')
 
-    # Create secondary y-axis for rejections
+    # Secondary Y-axis: rejection counts
     ax2 = ax1.twinx()
-    ax2.plot(df['run'], df['slow_rej'], marker='^', color='red', linestyle='--', label='Slow Rejections')
-    ax2.plot(df['run'], df['fast_rej'], marker='v', color='blue', linestyle=':', label='Fast Rejections')
-    ax2.set_ylabel('Rejections', color='black')
+    ax2.plot(df['run'], df['znorm'], marker='^', linestyle='--', color='tab:red', label='znorm')
+    ax2.plot(df['run'], df['lowbits'], marker='v', linestyle='--', color='tab:blue', label='lowbits')
+    ax2.plot(df['run'], df['hintnorm'], marker='>', linestyle='--', color='tab:green', label='hintnorm')
+    ax2.plot(df['run'], df['hintcount'], marker='<', linestyle='--', color='tab:purple', label='hintcount')
+    ax2.set_ylabel('Rejections (count)', color='black')
 
     plt.title(f'Dilithium Mode {mode} - Timing and Rejections per Run')
 
-    # Combine legends from both axes
+    # Combine legends
     lines1, labels1 = ax1.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
-    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper center')
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper center', ncol=3)
 
     plt.tight_layout()
     plt.savefig(IMG_FILE)
@@ -76,7 +75,7 @@ def generate_graph():
     print(f"Graph updated and saved to {IMG_FILE}")
 
 def main():
-    append_data(mode, keygen, sign, verify, slow_rej, fast_rej)
+    append_data()
     generate_graph()
 
 if __name__ == '__main__':

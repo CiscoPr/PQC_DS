@@ -53,6 +53,7 @@ RUN gcc -O2 -DDILITHIUM_MODE=5 -o test_timing_5 test_timing.c instrumental_sign.
 ENV LD_LIBRARY_PATH=/dilithium/ref
 
 # Default command (Run extensive timing tests for each mode)
+# Default command (Run extensive timing tests for each mode)
 CMD ["/bin/sh", "-c", "\
 mkdir -p /results && \
 for mode in 2 3 5; do \
@@ -63,14 +64,18 @@ for mode in 2 3 5; do \
     keygen=$(echo \"$output\" | grep 'Average key generation time:' | awk '{print $5}'); \
     sign=$(echo \"$output\" | grep 'Average signing time:' | awk '{print $4}'); \
     verify=$(echo \"$output\" | grep 'Average verification time:' | awk '{print $4}'); \
-    slow_rej=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $4}'); \
-    fast_rej=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $7}'); \
+    znorm=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $4}'); \
+    lowbits=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $6}'); \
+    hintnorm=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $8}'); \
+    hintcount=$(echo \"$output\" | grep 'Number of rejections:' | awk '{print $10}'); \
     [ -z \"$keygen\" ] && keygen=\"0.00\"; \
     [ -z \"$sign\" ] && sign=\"0.00\"; \
     [ -z \"$verify\" ] && verify=\"0.00\"; \
-    [ -z \"$slow_rej\" ] && slow_rej=\"0\"; \
-    [ -z \"$fast_rej\" ] && fast_rej=\"0\"; \
-    python3 generate_graph.py \"$mode\" \"$keygen\" \"$sign\" \"$verify\" \"$slow_rej\" \"$fast_rej\"; \
+    [ -z \"$znorm\" ] && znorm=\"0\"; \
+    [ -z \"$lowbits\" ] && lowbits=\"0\"; \
+    [ -z \"$hintnorm\" ] && hintnorm=\"0\"; \
+    [ -z \"$hintcount\" ] && hintcount=\"0\"; \
+    python3 generate_graph.py \"$mode\" \"$keygen\" \"$sign\" \"$verify\" \"$znorm\" \"$lowbits\" \"$hintnorm\" \"$hintcount\"; \
   done; \
   cp /results/rejection_timings.csv /results/rejection_log_mode${mode}.csv; \
 done; \
