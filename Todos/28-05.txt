@@ -1,2 +1,4 @@
-- correr nova versão no PC fixo
-- analisar os gráficos
+- correr nova versão no PC fixo ✅
+- analisar os gráficos ✅
+- corrigir análise do SPHINCS+
+- reescrever SOTA
