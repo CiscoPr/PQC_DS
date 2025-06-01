@@ -32,14 +32,16 @@ for root, _, files in os.walk(results_dir):
                 "KeyGen Time (ms)": round(df["keygen"].mean(), 3),
                 "Sign Time (ms)": round(df["sign"].mean(), 3),
                 "Verify Time (ms)": round(df["verify"].mean(), 3),
-                "Avg Slow Rejections": round(df["slow_rej"].mean(), 2),
-                "Avg Fast Rejections": round(df["fast_rej"].mean(), 2),
+                "Avg znorm Rej": round(df["znorm"].mean(), 2),
+                "Avg lowbits Rej": round(df["lowbits"].mean(), 2),
+                "Avg hintnorm Rej": round(df["hintnorm"].mean(), 2),
+                "Avg hintcount Rej": round(df["hintcount"].mean(), 2),
             }
 
             if rej_file:
                 df_rej = pd.read_csv(rej_file)
                 for label in df_rej["rejection_label"].unique():
-                    avg_us = df_rej[df_rej["rejection_label"] == label]["time_us"].mean()
+                    avg_us = df_rej[df_rej["rejection_label"] == label]["avg_time_us"].mean()
                     entry[f"RejTime {label} (ms)"] = round(avg_us / 1000.0, 3)
 
             summary.append(entry)
