@@ -56,10 +56,6 @@ def generate_graph():
     ax1.plot(df['run'], df['verify'], marker='s', label='Verify (ms)')
     ax1.set_ylabel('Time (ms)')
 
-    # Create a secondary y-axis for rejections.
-    ax2 = ax1.twinx()
-    ax2.plot(df['run'], df['rejections'], marker='^', color='gray', linestyle='--', label='Rejections')
-    ax2.set_ylabel('Rejections')
 
     plt.title(f'Dilithium Mode {mode} Timing & Rejections Over Runs')
     # Optionally hide x-axis labels if desired:
@@ -67,8 +63,7 @@ def generate_graph():
 
     # Combine legends from both axes
     lines1, labels1 = ax1.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper center')
+    ax1.legend(lines1, labels1 , loc='upper center')
 
     plt.tight_layout()
     plt.savefig(IMG_FILE)
