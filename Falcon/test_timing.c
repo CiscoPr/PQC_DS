@@ -13,8 +13,8 @@
 #define NUM_RUNS 10
 
 int randombytes(unsigned char *x, unsigned long long xlen);  // forward declaration
+extern unsigned long last_rejection_count;   // from sign.c
 
-// Helper function to get current time in seconds as a double.
 static inline double get_time(void) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -32,10 +32,13 @@ int main(void) {
     double total_keygen_time = 0.0;
     double total_sign_time   = 0.0;
     double total_verify_time = 0.0;
+    unsigned long total_rejections = 0;
 
     for (int i = 0; i < NUM_RUNS; i++) {
-        // Generate random message
         randombytes(m, MLEN);
+
+        // Reset the counter before each sign call:
+        last_rejection_count = 0;
 
         // Measure key generation time
         double start = get_time();
@@ -63,10 +66,20 @@ int main(void) {
         }
         end = get_time();
         total_verify_time += (end - start);
+
+        // Accumulate how many times the inner loop rejected before success:
+        total_rejections += last_rejection_count;
     }
 
-    printf("Average key generation time: %.3f ms\n", (total_keygen_time) * 1000.0);
-    printf("Average signing time: %.3f ms\n", (total_sign_time) * 1000.0);
-    printf("Average verification time: %.3f ms\n", (total_verify_time) * 1000.0);
+    double avg_keygen_ms = (total_keygen_time / NUM_RUNS) * 1000.0;
+    double avg_sign_ms   = (total_sign_time   / NUM_RUNS) * 1000.0;
+    double avg_verify_ms = (total_verify_time / NUM_RUNS) * 1000.0;
+    double avg_rejections = (double)total_rejections / (double)NUM_RUNS;
+
+    printf("Average key generation time:    %.3f ms\n", avg_keygen_ms);
+    printf("Average signing time:           %.3f ms\n", avg_sign_ms);
+    printf("Average verification time:      %.3f ms\n", avg_verify_ms);
+    printf("Average rejections per sign:    %.4f\n", avg_rejections);
+
     return 0;
 }

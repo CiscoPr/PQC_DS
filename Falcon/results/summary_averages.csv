@@ -1,3 +1,0 @@
-Mode,KeyGen Time (ms),Sign Time (ms),Verify Time (ms)
-falcon_1024,338.28,92.35,0.81
-falcon_512,170.45,42.43,0.38
