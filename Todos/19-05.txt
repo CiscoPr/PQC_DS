@@ -12,7 +12,7 @@
     - SPHINCS+: security relies entirely on the hash function used; has a very conservative design, assuming minimal risk from quantum Attacks
                 Pros: simple security assumptions, easy to analyze against classical and quantum attacks, compact keys, resistant to all known lattice attacks
                 Cons: large signature sizes, slow signing and verification and impractical for tight-bandwidth or latency-sensitive systems
-    
+
     "Performance Analysis of Post-Quantum Cryptography Algorithms for Digital Signature":
     - Compares the 3 solutions, focusing on keypair generation, file signing and signature verification and the results are compared against the RSA to assess feasibility in real-world applications
     - Keypair Generation Time:
@@ -26,10 +26,13 @@
     - Verification Time:
       - SPHINCS+ SHA2-192/256 variants unexpectedly outperform Falcon and Dilithium for 10MB verification.
       - “For signing large-sized files, algorithms with an ‘s’ suffix would be a better choice.”
-    - In comparison to RSA, despite having about a 27.7% time overhead, Dilithium offers quantum resistance and higher security: 
+    - In comparison to RSA, despite having about a 27.7% time overhead, Dilithium offers quantum resistance and higher security:
         "Dilithium algorithms, including the best one—labelled Dilithium5, appear to be suitable candidates for replacing RSA."
+    -Their comparison is made in Vms using liboqs as well as generated files. This can be the explanation between our difference in measurements between Falcon and DILITHIUM, specially in signing time
+    They use liboqs and Click which, in the end, can make general analysis much easier. However, their code base doesn't seem to have much flexibility when it comes to analyse with much detail: for example
+    in Dilithium, there's no reference whatsoever to the rejections and how they relate to the variations shown in the time; they don't analyse all the variations of SPHINCs+, etc. While very useful for overall
+    analysis, it's still a very "black box" analysis, with no possibility to tweak and experiemnt with the algorithm or see specially their intricancies
 
-    
     "A Meta-Analysis on NIST Post-Quantum Cryptographic Primitive Finalists"
     - Assesses security, performance (key sizes and processing times) and suitability for aplications of the 3 solutions (including Kyber, but we will ignore this one)
     - "Dilithium stood out as the most efficient in terms of the public key size to encryption time ratio.”
@@ -38,3 +41,5 @@
       - Dilithium: best for resource-constrained devices due to compactness
       - SPHINCS+: large signatures, higher bandwidth
       - FALCON: compact and secure but implementation is complex
+    - Some of the graphs on this paper are a bit confusing when analysing: for example, Figure 1 seems to show a ratio between pk and encryption time... however, this doesn't seem to make much sense or be very useful
+    

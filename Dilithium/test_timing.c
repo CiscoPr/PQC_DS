@@ -7,7 +7,7 @@
 
 #define MLEN 32
 #define CTXLEN 14
-#define NUM_RUNS 25
+#define NUM_RUNS 10
 
 // Helper function to return current time in seconds as a double.
 static inline double get_time(void) {
