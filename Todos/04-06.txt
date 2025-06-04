@@ -28,3 +28,8 @@ p
 larger than this expected value by a factor more than sig is rejected. By applying [Lyu12, Lemma 4.4,
 Item 3], the probability that a sampled signature is larger than  (hence that the signing procedure has to
 restart) is upper bounded as follows:"
+- corrigir análise do SPHINCS+
+- reescrever SOTA
+- gráficos com rejeiçõe: retirar keygen e verify e diminuir o intervalo
+- gráficos sem rejeições: tirar as rejeições e só analisar o sign, keygen e verify
+- gráfico de barras deitados com as médias de tempo de cada processo de cada solução 
