@@ -66,7 +66,15 @@ def generate_graph():
     ax.set_xlabel('Run #')
     ax.set_ylabel('Time (ms)')
     plt.title(f'Falcon {mode} Timing Over Runs')
-    ax.legend(loc='upper center')
+    # gather handles & labels from both axes
+    lines_ax, labels_ax   = ax.get_legend_handles_labels()
+    lines_ax2, labels_ax2 = ax2.get_legend_handles_labels()
+
+    # combine them
+    all_lines  = lines_ax  + lines_ax2
+    all_labels = labels_ax + labels_ax2
+
+    ax.legend(all_lines, all_labels, loc='upper center')
 
     plt.tight_layout()
     plt.savefig(IMG_FILE)

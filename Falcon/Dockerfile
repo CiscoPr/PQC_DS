@@ -85,7 +85,7 @@ CMD ["sh", "-c", "\
     BIN=\"/opt/test_timing_${MODE}\"; \
     if [ ! -x \"$BIN\" ]; then echo \"*** ERROR: timing binary not found: $BIN\" >&2; exit 1; fi; \
     echo \"---- Running Falcon-$MODE timing loop ----\"; \
-    for i in $(seq 1 10); do \
+    for i in $(seq 1 100); do \
       echo \"Run #$i for Falcon-$MODE...\"; \
       OUTFILE=\"/opt/out.txt\"; \
       $BIN > \"$OUTFILE\" 2>&1; \
