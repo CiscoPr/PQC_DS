@@ -1,0 +1,3 @@
+Mode,KeyGen Time (ms),Sign Time (ms),Verify Time (ms)
+512,14.72,3.66,0.03
+1024,29.31,7.97,0.07
