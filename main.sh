@@ -24,9 +24,9 @@ select opt in "${options[@]}"; do
             echo "Copying results from container..."
 
             for mode in 2 3 5; do
-                docker cp dilithium_container:/results/dilithium_times_mode${mode}.csv Dilithium/results/mode${mode}/dilithium_times.csv
-                docker cp dilithium_container:/results/dilithium_times_mode${mode}.png Dilithium/results/mode${mode}/dilithium_times.png
-                docker cp dilithium_container:/results/rejection_log_mode${mode}.csv Dilithium/results/mode${mode}/rejection_timings.csv
+                docker cp dilithium_container:/results/dilithium_times_mode${mode}.csv Dilithium/results_analysis/mode${mode}/dilithium_times.csv
+                docker cp dilithium_container:/results/dilithium_times_mode${mode}.png Dilithium/results_analysis/mode${mode}/dilithium_times.png
+                docker cp dilithium_container:/results/rejection_log_mode${mode}.csv Dilithium/results_analysis/mode${mode}/rejection_timings.csv
             done
 
             echo "Results have been downloaded to the local 'results' folder."

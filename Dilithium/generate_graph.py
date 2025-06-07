@@ -55,20 +55,21 @@ def generate_graph():
     ax1.set_ylabel('Time (ms)', color='black')
 
     # Secondary Y-axis: rejection counts
-    ax2 = ax1.twinx()
-    ax2.plot(df['run'], df['znorm'], marker='^', linestyle='--', color='tab:red', label='znorm')
-    ax2.plot(df['run'], df['lowbits'], marker='v', linestyle='--', color='tab:blue', label='lowbits')
-    ax2.plot(df['run'], df['hintnorm'], marker='>', linestyle='--', color='tab:green', label='hintnorm')
-    ax2.plot(df['run'], df['hintcount'], marker='<', linestyle='--', color='tab:purple', label='hintcount')
-    ax2.set_ylabel('Rejection Count (per run)', color='black')
-    
-    plt.title(f'Dilithium Mode {mode} - Timing and Rejections per Run')
+    #ax2 = ax1.twinx()
+    #ax2.plot(df['run'], df['znorm'], marker='^', linestyle='--', color='tab:red', label='znorm')
+    #ax2.plot(df['run'], df['lowbits'], marker='v', linestyle='--', color='tab:blue', label='lowbits')
+    #ax2.plot(df['run'], df['hintnorm'], marker='>', linestyle='--', color='tab:green', label='hintnorm')
+    #ax2.plot(df['run'], df['hintcount'], marker='<', linestyle='--', color='tab:purple', label='hintcount')
+    #ax2.set_ylabel('Rejection Count (per run)', color='black')
 
+    #plt.title(f'Dilithium Mode {mode} - Timing and Rejections per Run')
+    plt.title(f'Dilithium Mode {mode} - Timing per Run')
     # Combine legends
     lines1, labels1 = ax1.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper center', ncol=3)
-
+    #lines2, labels2 = ax2.get_legend_handles_labels()
+    #ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper center', ncol=3)
+    ax1.legend(lines1 , labels1, loc='upper center', ncol=3)
+    
     plt.tight_layout()
     plt.savefig(IMG_FILE)
     plt.close()

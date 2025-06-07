@@ -32,6 +32,6 @@ restart) is upper bounded as follows:"
 - reescrever SOTA
 - gráficos com rejeiçõe: retirar keygen e verify e diminuir o intervalo
 - gráficos sem rejeições: tirar as rejeições e só analisar o sign, keygen e verify
-- gráfico de barras deitados com as médias de tempo de cada processo de cada solução
+- gráfico de barras deitados com as médias de tempo de cada processo de cada solução ✅
 - perceber o porquê do paper "Performance Analysis of Post-Quantum Cryptography Algorithms for Digital Signature" ter medidas diferentes para o Falcon
 - equiparar o meu trabalho com os dos papers, assim como também as suas igualdades e diferenças e vantagens do meu
