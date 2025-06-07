@@ -57,7 +57,7 @@ ENV LD_LIBRARY_PATH=/dilithium/ref
 CMD ["/bin/sh", "-c", "\
 mkdir -p /results && \
 for mode in 2 3 5; do \
-  for i in $(seq 1 100); do \
+  for i in $(seq 1 25); do \
     output=$(./test_timing_${mode}); \
     echo \"Mode $mode, iteration $i output:\"; \
     echo \"$output\"; \
