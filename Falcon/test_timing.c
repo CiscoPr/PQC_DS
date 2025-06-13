@@ -13,7 +13,8 @@
 #define NUM_RUNS 10
 
 int randombytes(unsigned char *x, unsigned long long xlen);  // forward declaration
-extern unsigned long last_rejection_count;   // from sign.c
+extern unsigned long high_level_rejection_count;   // from sign.c
+extern unsigned long low_level_rejection_count;    // from sign.c
 
 static inline double get_time(void) {
     struct timespec ts;
@@ -32,13 +33,15 @@ int main(void) {
     double total_keygen_time = 0.0;
     double total_sign_time   = 0.0;
     double total_verify_time = 0.0;
-    unsigned long total_rejections = 0;
+    unsigned long total_high_level_rejections = 0;
+    unsigned long total_low_level_rejections = 0;
 
     for (int i = 0; i < NUM_RUNS; i++) {
         randombytes(m, MLEN);
 
-        // Reset the counter before each sign call:
-        last_rejection_count = 0;
+        // Reset counters before each iteration
+        high_level_rejection_count = 0;
+        low_level_rejection_count = 0;
 
         // Measure key generation time
         double start = get_time();
@@ -67,19 +70,22 @@ int main(void) {
         end = get_time();
         total_verify_time += (end - start);
 
-        // Accumulate how many times the inner loop rejected before success:
-        total_rejections += last_rejection_count;
+        // Accumulate total rejection counts
+        total_high_level_rejections += high_level_rejection_count;
+        total_low_level_rejections += low_level_rejection_count;
     }
 
     double avg_keygen_ms = (total_keygen_time / NUM_RUNS) * 1000.0;
     double avg_sign_ms   = (total_sign_time   / NUM_RUNS) * 1000.0;
     double avg_verify_ms = (total_verify_time / NUM_RUNS) * 1000.0;
-    double avg_rejections = (double)total_rejections / (double)NUM_RUNS;
+    double avg_high_level_rejections = (double)total_high_level_rejections / (double)NUM_RUNS;
+    double avg_low_level_rejections = (double)total_low_level_rejections / (double)NUM_RUNS;
 
-    printf("Average key generation time:    %.3f ms\n", avg_keygen_ms);
-    printf("Average signing time:           %.3f ms\n", avg_sign_ms);
-    printf("Average verification time:      %.3f ms\n", avg_verify_ms);
-    printf("Average rejections per sign:    %.4f\n", avg_rejections);
+    printf("Average key generation time:          %.3f ms\n", avg_keygen_ms);
+    printf("Average signing time:                 %.3f ms\n", avg_sign_ms);
+    printf("Average verification time:            %.3f ms\n", avg_verify_ms);
+    printf("Average high-level rejections:        %.4f\n", avg_high_level_rejections);
+    printf("Average low-level rejections:         %.4f\n", avg_low_level_rejections);
 
     return 0;
 }

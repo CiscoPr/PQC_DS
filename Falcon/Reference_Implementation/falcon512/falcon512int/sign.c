@@ -32,8 +32,10 @@
 #include "inner.h"
 
 // --------------------------------------------------------------------------------
-// Global that holds how many times the outer “do_sign_tree” loop iterated:
-unsigned long last_rejection_count = 0;
+// Global counters for rejection sampling:
+unsigned long low_level_rejection_count = 0;
+unsigned long high_level_rejection_count = 0;
+
 // --------------------------------------------------------------------------------
 
 /* =================================================================== */
@@ -1181,6 +1183,9 @@ Zf(sampler)(void *ctx, fpr mu, fpr isigma)
 			 * actual center is mu = s + r.
 			 */
 			return s + z;
+		}else{
+			low_level_rejection_count++; // Increment global rejection counter
+
 		}
 	}
 }
@@ -1193,11 +1198,13 @@ Zf(sign_tree)(int16_t *sig, inner_shake256_context *rng,
 {
 	fpr *ftmp;
 
-	// count how many times we call do_sign_tree():
-    unsigned long rejection_count = 0;
+    // Reset counters before signature loop:
+    high_level_rejection_count = 0;
+    low_level_rejection_count = 0;
+
 	ftmp = (fpr *)tmp;
 	for (;;) {
-		rejection_count++;
+        high_level_rejection_count++; // Increment on each signature attempt
 		/*
 		 * Signature produces short vectors s1 and s2. The
 		 * signature is acceptable only if the aggregate vector
@@ -1231,8 +1238,7 @@ Zf(sign_tree)(int16_t *sig, inner_shake256_context *rng,
 		}
 	}
 
-	// store final count into the global:
-    last_rejection_count = rejection_count;
+
 }
 
 /* see inner.h */

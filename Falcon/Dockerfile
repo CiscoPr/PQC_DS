@@ -92,9 +92,10 @@ CMD ["sh", "-c", "\
       KG=$(grep \"Average key generation time:\"   \"$OUTFILE\" | awk '{print $5}'); \
       SG=$(grep \"Average signing time:\"          \"$OUTFILE\" | awk '{print $4}'); \
       VG=$(grep \"Average verification time:\"     \"$OUTFILE\" | awk '{print $4}'); \
-      REJ=$(grep \"Average rejections per sign:\" \"$OUTFILE\" | awk '{print $5}'); \
-      echo \"Falcon-${MODE}, iteration ${i}, keygen=${KG}, sign=${SG}, verify=${VG}, rejections=${REJ}\"; \
-      python3 /opt/generate_graph.py \"$MODE\" \"$KG\" \"$SG\" \"$VG\" \"$REJ\"; \
+      HLR=$(grep \"Average high-level rejections:\" \"$OUTFILE\" | awk '{print $4}'); \
+      LLR=$(grep \"Average low-level rejections:\"  \"$OUTFILE\" | awk '{print $4}'); \
+      echo \"Falcon-${MODE}, Iteration $i => KG=${KG}, SG=${SG}, VG=${VG}, HighRej=${HLR}, LowRej=${LLR}\"; \
+      python3 /opt/generate_graph.py \"$MODE\" \"$KG\" \"$SG\" \"$VG\" \"$HLR\" \"$LLR\"; \
     done; \
   done\
 "]
