@@ -79,7 +79,7 @@ int main(void) {
     printf("Average key generation time: %.3f ms\n", (total_keygen_time / NUM_RUNS) * 1000.0);
     printf("Average signing time: %.3f ms\n", (total_sign_time / NUM_RUNS) * 1000.0);
     printf("Average verification time: %.3f ms\n", (total_verify_time / NUM_RUNS) * 1000.0);
-    printf("Number of rejections: %d znorm, %d lowbits, %d hitnorm and %d hitcount", total_znorm_rejections, total_lowbits_rejections, total_hitnorm_rejections, total_hitcount_rejections);
+    printf("Number of rejections: %1.f znorm, %1.f lowbits, %1.f hitnorm and %1.f hitcount", total_znorm_rejections/NUM_RUNS, total_lowbits_rejections/NUM_RUNS, total_hitnorm_rejections/NUM_RUNS, total_hitcount_rejections/NUM_RUNS);
 
 
     return 0;
