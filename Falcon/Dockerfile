@@ -1,115 +1,60 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Dockerfile to clone Falcon-round3, build the Extra/C harness (test_falcon.c),
+# compile your 11 focused drivers, and run each to hit exactly one stderr error.
+# ─────────────────────────────────────────────────────────────────────────────
 FROM ubuntu:20.04
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential \
-    git \
-    curl \
-    unzip \
-    ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+# 1) Install build deps
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      build-essential \
+      clang \
+      make \
+      git \
+      curl \
+      unzip \
+      ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-# Create workdir and fetch Falcon
+# 2) Fetch Falcon-round3
 WORKDIR /falcon
 RUN curl -L -o falcon3.zip https://falcon-sign.info/falcon-round3.zip && \
-    unzip falcon3.zip && rm falcon3.zip
+    unzip falcon3.zip && \
+    rm falcon3.zip
 
-# Move to Reference Implementation path
-WORKDIR /falcon/falcon-round3
+# 3) Build the reference C in Extra/c
+WORKDIR /falcon/falcon-round3/Extra/c
+RUN make
 
-# Copy your override files into the container
-COPY tests/keypair_error.c ./tests/
-COPY tests/open_error.c ./tests/
-COPY tests/open_bad_m.c ./tests/
-COPY tests/open_bad_mlen.c ./tests/
-COPY tests/sign_error.c ./tests/
 
-# Now compile everything properly
-RUN gcc -O2 \
-    -I Reference_Implementation/falcon512/falcon512int \
-    -I KAT/generator \
-    KAT/generator/PQCgenKAT_sign.c \
-    KAT/generator/katrng.c \
-    Reference_Implementation/falcon512/falcon512int/codec.c \
-    Reference_Implementation/falcon512/falcon512int/common.c \
-    Reference_Implementation/falcon512/falcon512int/fft.c \
-    Reference_Implementation/falcon512/falcon512int/fpr.c \
-    Reference_Implementation/falcon512/falcon512int/keygen.c \
-    Reference_Implementation/falcon512/falcon512int/rng.c \
-    Reference_Implementation/falcon512/falcon512int/shake.c \
-    Reference_Implementation/falcon512/falcon512int/vrfy.c \
-    tests/keypair_error.c \
-    -o test_keypair
-
-RUN gcc -O2 \
-    -I Reference_Implementation/falcon512/falcon512int \
-    -I KAT/generator \
-    KAT/generator/PQCgenKAT_sign.c \
-    KAT/generator/katrng.c \
-    Reference_Implementation/falcon512/falcon512int/codec.c \
-    Reference_Implementation/falcon512/falcon512int/common.c \
-    Reference_Implementation/falcon512/falcon512int/fft.c \
-    Reference_Implementation/falcon512/falcon512int/fpr.c \
-    Reference_Implementation/falcon512/falcon512int/keygen.c \
-    Reference_Implementation/falcon512/falcon512int/rng.c \
-    Reference_Implementation/falcon512/falcon512int/shake.c \
-    Reference_Implementation/falcon512/falcon512int/vrfy.c \
-    tests/sign_error.c \
-    -o test_sign
-
-RUN gcc -O2 \
-    -I Reference_Implementation/falcon512/falcon512int \
-    -I KAT/generator \
-    KAT/generator/PQCgenKAT_sign.c \
-    KAT/generator/katrng.c \
-    Reference_Implementation/falcon512/falcon512int/codec.c \
-    Reference_Implementation/falcon512/falcon512int/common.c \
-    Reference_Implementation/falcon512/falcon512int/fft.c \
-    Reference_Implementation/falcon512/falcon512int/fpr.c \
-    Reference_Implementation/falcon512/falcon512int/keygen.c \
-    Reference_Implementation/falcon512/falcon512int/rng.c \
-    Reference_Implementation/falcon512/falcon512int/shake.c \
-    Reference_Implementation/falcon512/falcon512int/vrfy.c \
-    tests/open_error.c \
-    -o test_ver_open_err
-
-RUN gcc -O2 \
-    -I Reference_Implementation/falcon512/falcon512int \
-    -I KAT/generator \
-    KAT/generator/PQCgenKAT_sign.c \
-    KAT/generator/katrng.c \
-    Reference_Implementation/falcon512/falcon512int/codec.c \
-    Reference_Implementation/falcon512/falcon512int/common.c \
-    Reference_Implementation/falcon512/falcon512int/fft.c \
-    Reference_Implementation/falcon512/falcon512int/fpr.c \
-    Reference_Implementation/falcon512/falcon512int/keygen.c \
-    Reference_Implementation/falcon512/falcon512int/rng.c \
-    Reference_Implementation/falcon512/falcon512int/shake.c \
-    Reference_Implementation/falcon512/falcon512int/vrfy.c \
-    tests/open_bad_mlen.c \
-    -o test_ver_mlen
-
-RUN gcc -O2 \
-    -I Reference_Implementation/falcon512/falcon512int \
-    -I KAT/generator \
-    KAT/generator/PQCgenKAT_sign.c \
-    KAT/generator/katrng.c \
-    Reference_Implementation/falcon512/falcon512int/codec.c \
-    Reference_Implementation/falcon512/falcon512int/common.c \
-    Reference_Implementation/falcon512/falcon512int/fft.c \
-    Reference_Implementation/falcon512/falcon512int/fpr.c \
-    Reference_Implementation/falcon512/falcon512int/keygen.c \
-    Reference_Implementation/falcon512/falcon512int/rng.c \
-    Reference_Implementation/falcon512/falcon512int/shake.c \
-    Reference_Implementation/falcon512/falcon512int/vrfy.c \
-    tests/open_bad_m.c \
-    -o test_ver_msg
+# 4) Remove static + rename main properly
+RUN sed -E 's/^[[:space:]]*static[[:space:]]+//g' -i test_falcon.c && \
+    perl -0777 -i -pe 's/int\s+main\s*\((.*?)\)/void test_falcon_harness(\1)/s' test_falcon.c && \
+    gcc -O2 -fPIC -I. -c test_falcon.c -o harness.o
 
 
 
-# Default run command to execute all tests
-CMD /bin/sh -c "set +e; \
-echo '== keypair error =='; ./test_keypair || true; echo; \
-echo '== signing error =='; ./test_sign || true; echo; \
-echo '== open error =='; ./test_ver_open_err || true; echo; \
-echo '== bad mlen =='; ./test_ver_mlen || true; echo; \
-echo '== bad message content =='; ./test_ver_msg || true"
+# 5) Copy in your 11 error-drivers (keygen_failed.c, makepub_failed.c, …, wrong_pub_enc_length.c)
+COPY tests/*.c ./tests/
+
+# 6) Compile each driver into its own executable under /falcon/testsbin
+WORKDIR /falcon/falcon-round3/Extra/c
+# 6) Compile each test driver into /falcon/testsbin/
+RUN mkdir -p /falcon/testsbin && \
+    for src in tests/*.c; do \
+      name=$(basename "$src" .c); \
+      gcc -O2 -fPIC -no-pie -I. \
+        harness.o codec.o common.o falcon.o fft.o fpr.o keygen.o \
+        rng.o shake.o sign.o vrfy.o \
+        "$src" -o /falcon/testsbin/"$name"; \
+    done
+
+# 7) Run every test (including full test_falcon harness)
+CMD ["sh","-c","\
+  set +e; \
+  for exe in /falcon/testsbin/*; do \
+    echo; echo '======================================='; \
+    echo \"Running $(basename \"$exe\"):\"; \
+    echo '======================================='; \
+    \"$exe\"; \
+  done"]
