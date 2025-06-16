@@ -1,7 +1,7 @@
-- literature review é metodologia e incluir td no mesmo capítulo (state of the art)
+- literature review é metodologia e incluir td no mesmo capítulo (state of the art) ✅
 - explicar as métricas usadas para cada solução
 - explicar pq se distinguem dos testes dos autores dos esquemas e pq não está uma implementação errada
-- mudar proposed solution para ds-pqc benchmarking methodology
-- mudar RQ's para SOTA
-- reescrever a introdução
+- mudar proposed solution para ds-pqc benchmarking methodology✅
+- mudar RQ's para SOTA✅
+- reescrever a introdução✅
 - dar rework à approached solution, sem expected results, pois não faz sentido
