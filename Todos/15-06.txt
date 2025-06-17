@@ -1,0 +1,11 @@
+- reorganizar melhor o diagrama do esquema do Dilithium
+- fazer os diagramas dos esquemas do Falcon, SPHINCS+ e Rainbow
+- desenvolver as comparações e contrastes com o paper "Performance Analysis of Post-Quantum Cryptography
+Algorithms for Digital Signature" e explicar a incoerência que dá a entender desse paper (pela leitura, parece que o liboqs, por default, analisa as implementações optimizadas, o que é mentira), assim como as diferenças e semelhanças
+com os papers "A meta-analysis on NIST post-quantum cryptographic
+primitive finalists" (este utiliza gráficos que não parecem muito convencionais e que possam ser usados para uma boa interpretação dos dados) e "Performance and Applicability of Post-Quantum Digital
+Signature Algorithms in Resource-Constrained Environments" (a maneira exata de como fizeram estes testes é desconhecida em termos de software envolvido)
+- escrever abstract com keywords
+- escrever acknowledgments
+- atualizar o esquema prisma e os números da revisão de literatura
+- corrigir warnings levantados pelo overleaf

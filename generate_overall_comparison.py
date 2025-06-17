@@ -152,6 +152,7 @@ def main():
     ax.set_title("Average KeyGen/Sign/Verify Time for PQC Schemes")
     ax.set_xticks(x)
     ax.set_xticklabels(labels, rotation=90, fontsize=8)
+    ax.set_xlim(x[0] - 1, x[-1] + 1)  # trims extra space left/right of bars
     ax.legend(loc="upper left")
 
     plt.tight_layout()
