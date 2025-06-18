@@ -5,3 +5,9 @@
 - mudar RQ's para SOTA✅
 - reescrever a introdução✅
 - dar rework à approached solution, sem expected results, pois não faz sentido
+
+
+----Perguntas---------------------------------------------------------------------
+Separar a metodologia em várias subsecções tb?
+Quanto às RQs, criar uma secção, subseção prórpia ou deixar na introdução da metodologia?
+A subseção Study Selection repete um bcd o que se diz na Elegibility Criteria.Tira-se?
