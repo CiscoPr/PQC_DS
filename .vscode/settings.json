@@ -3,6 +3,10 @@
         "*.embeddedhtml": "html",
         "stdint.h": "c",
         "api.h": "c",
-        "inner.h": "c"
+        "inner.h": "c",
+        "time.h": "c",
+        "string.h": "c",
+        "stddef.h": "c",
+        "stdio.h": "c"
     }
 }

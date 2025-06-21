@@ -28,7 +28,8 @@
  *
  * @author   Thomas Pornin <thomas.pornin@nccgroup.com>
  */
-
+#define _POSIX_C_SOURCE 199309L
+#include <time.h>
 #include "inner.h"
 
 #define MKN(logn)   ((size_t)1 << (logn))
@@ -91,6 +92,7 @@
  * All primes are such that p = 1 mod 2048, and are lower than 2^31. They
  * are listed in decreasing order.
  */
+static double ntruTimerTotal = 0.0;
 
 typedef struct {
 	uint32_t p;
@@ -3960,10 +3962,21 @@ solve_NTRU_binary_depth0(unsigned logn,
  * If any of the coefficients of F and G exceeds lim (in absolute value),
  * then 0 is returned.
  */
+double get_NTRUTimer(void) {
+    return ntruTimerTotal;
+}
+double ntru_start, ntru_end;
+static inline double get_time(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return ts.tv_sec + ts.tv_nsec / 1e9;
+}
 static int
 solve_NTRU(unsigned logn, int8_t *F, int8_t *G,
 	const int8_t *f, const int8_t *g, int lim, uint32_t *tmp)
 {
+	ntru_start = get_time();
+
 	size_t n, u;
 	uint32_t *ft, *gt, *Ft, *Gt, *gm;
 	uint32_t p, p0i, r;
@@ -4063,7 +4076,8 @@ solve_NTRU(unsigned logn, int8_t *F, int8_t *G,
 			return 0;
 		}
 	}
-
+	ntru_end = get_time();
+	ntruTimerTotal = (ntru_end-ntru_start);
 	return 1;
 }
 

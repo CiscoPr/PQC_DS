@@ -33,6 +33,7 @@ RUN curl -L -o falcon-round3.zip https://falcon-sign.info/falcon-round3.zip && \
 
 # 5) Overwrite sign.c in the Falcon-512 folder with our patched version
 COPY ./Reference_Implementation/falcon512/falcon512int/sign.c /opt/falcon-round3/Reference_Implementation/falcon512/falcon512int/sign.c
+COPY ./Reference_Implementation/falcon512/falcon512int/keygen.c /opt/falcon-round3/Reference_Implementation/falcon512/falcon512int/keygen.c
 
 # 6) Build the 512‐bit reference implementation
 WORKDIR /opt/falcon-round3/Reference_Implementation/falcon512/falcon512int
@@ -40,6 +41,7 @@ RUN make clean && make
 
 # 7) Overwrite sign.c in the Falcon-1024 folder with our patched version
 COPY ./Reference_Implementation/falcon1024/falcon1024int/sign.c /opt/falcon-round3/Reference_Implementation/falcon1024/falcon1024int/sign.c
+COPY ./Reference_Implementation/falcon1024/falcon1024int/keygen.c /opt/falcon-round3/Reference_Implementation/falcon1024/falcon1024int/keygen.c
 
 # 8) Build the 1024‐bit reference implementation
 WORKDIR /opt/falcon-round3/Reference_Implementation/falcon1024/falcon1024int
@@ -85,7 +87,7 @@ CMD ["sh", "-c", "\
     BIN=\"/opt/test_timing_${MODE}\"; \
     if [ ! -x \"$BIN\" ]; then echo \"*** ERROR: timing binary not found: $BIN\" >&2; exit 1; fi; \
     echo \"---- Running Falcon-$MODE timing loop ----\"; \
-    for i in $(seq 1 100); do \
+    for i in $(seq 1 25); do \
       echo \"Run #$i for Falcon-$MODE...\"; \
       OUTFILE=\"/opt/out.txt\"; \
       $BIN > \"$OUTFILE\" 2>&1; \
@@ -93,8 +95,9 @@ CMD ["sh", "-c", "\
       SG=$(grep \"Average signing time:\"          \"$OUTFILE\" | awk '{print $4}'); \
       VG=$(grep \"Average verification time:\"     \"$OUTFILE\" | awk '{print $4}'); \
       REJ=$(grep \"Average rejections per sign:\" \"$OUTFILE\" | awk '{print $5}'); \
-      echo \"Falcon-${MODE}, iteration ${i}, keygen=${KG}, sign=${SG}, verify=${VG}, rejections=${REJ}\"; \
-      python3 /opt/generate_graph.py \"$MODE\" \"$KG\" \"$SG\" \"$VG\" \"$REJ\"; \
+      NTRU=$(grep \"Average NTRU solving time:\" \"$OUTFILE\" | awk '{print $5}'); \
+      echo \"Falcon-${MODE}, iteration ${i}, keygen=${KG}, sign=${SG}, verify=${VG}, rejections=${REJ}, ntru_timing=${NTRU}\"; \
+      python3 /opt/generate_graph.py \"$MODE\" \"$KG\" \"$SG\" \"$VG\" \"$REJ\" \"$NTRU\"; \
     done; \
   done\
 "]
