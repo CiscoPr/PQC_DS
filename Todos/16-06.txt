@@ -1,10 +1,11 @@
 - retirar os papers q não são de pqc do sota e pô-los como uma introdução do capítulo. Depois, falar
   de que os papers que serão falados estão relacionados só com a parte do Post-Quantum  ✅
 - dar rework à approached solution, sem expected results, pois não faz sentido
-- explicar as métricas usadas para cada solução
-- explicar pq se distinguem dos testes dos autores dos esquemas e pq não está uma implementação errada
+- explicar as métricas usadas para cada solução ✅
+- explicar pq se distinguem dos testes dos autores dos esquemas e pq não está uma implementação errada ✅
 
 -----------------------------------------------------Perguntas---------------------------------------------------------------------
 
 - Na methodology,  falar dos esquemas de testing de cada solução
 - falar dos parâmetros das soluções
+- Eu tenho de falar um bcd na msm da framework, visto que tenho de falar como a minha análise se diferencia de outras, assim como é que as minhas medidas não foram obtidas de forma errada
