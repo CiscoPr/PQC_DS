@@ -96,8 +96,10 @@ CMD ["sh", "-c", "\
       VG=$(grep \"Average verification time:\"     \"$OUTFILE\" | awk '{print $4}'); \
       REJ=$(grep \"Average rejections per sign:\" \"$OUTFILE\" | awk '{print $5}'); \
       NTRU=$(grep \"Average NTRU solving time:\" \"$OUTFILE\" | awk '{print $5}'); \
-      echo \"Falcon-${MODE}, iteration ${i}, keygen=${KG}, sign=${SG}, verify=${VG}, rejections=${REJ}, ntru_timing=${NTRU}\"; \
-      python3 /opt/generate_graph.py \"$MODE\" \"$KG\" \"$SG\" \"$VG\" \"$REJ\" \"$NTRU\"; \
+      GAUSS=$(grep \"Average Gaussian sampling time:\" \"$OUTFILE\" | awk '{print $5}'); \
+      FFT=$(grep \"Average FFT time:\" \"$OUTFILE\" | awk '{print $4}'); \
+      echo \"Falcon-${MODE}, iteration ${i}, keygen=${KG}, sign=${SG}, verify=${VG}, rejections=${REJ}, ntru_timing=${NTRU}, gauss_timing=${GAUSS}, fft_timing=${FFT}\"; \
+      python3 /opt/generate_graph.py \"$MODE\" \"$KG\" \"$SG\" \"$VG\" \"$REJ\" \"$NTRU\" \"$GAUSS\" \"$FFT\"; \
     done; \
   done\
 "]

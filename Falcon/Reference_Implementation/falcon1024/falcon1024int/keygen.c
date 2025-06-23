@@ -621,9 +621,11 @@ static const small_prime PRIMES[] = {
 	{ 2136041473,  156415894, 1250757633 },
 	{ 2135996417,  297459940, 1132158924 },
 	{ 2135955457,  538755304, 1688831340 },
-	{ 0, 0, 0 }
+	{ 0, 0, 0 } 
 };
 static double ntruTimerTotal = 0.0;
+static double gaussTimerTotal = 0.0;
+static double fftTimerTotal = 0.0;
 /*
  * Reduce a small signed integer modulo a small prime. The source
  * value x MUST be such that -p < x < p.
@@ -3965,7 +3967,16 @@ double get_NTRUTimer(void) {
     return ntruTimerTotal;
 }
 
-double ntru_start, ntru_end;
+double get_GaussTimer(void) {
+	return gaussTimerTotal;
+}
+
+double get_FFTTimer(void) {
+	return fftTimerTotal;
+}
+
+double ntru_start, ntru_end, gauss_start, gauss_end, fft_start, fft_end;
+
 static inline double get_time(void) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -4076,7 +4087,7 @@ solve_NTRU(unsigned logn, int8_t *F, int8_t *G,
 		}
 	}
 	ntru_end = get_time();
-	ntruTimerTotal = (ntru_end-ntru_start);
+	ntruTimerTotal += (ntru_end-ntru_start);
 	return 1;
 }
 
@@ -4087,6 +4098,7 @@ solve_NTRU(unsigned logn, int8_t *F, int8_t *G,
 static void
 poly_small_mkgauss(RNG_CONTEXT *rng, int8_t *f, unsigned logn)
 {
+	gauss_start = get_time();
 	size_t n, u;
 	unsigned mod2;
 
@@ -4122,6 +4134,8 @@ poly_small_mkgauss(RNG_CONTEXT *rng, int8_t *f, unsigned logn)
 		}
 		f[u] = (int8_t)s;
 	}
+	gauss_end = get_time();
+	gaussTimerTotal += (gauss_end - gauss_start);
 }
 
 /* see falcon.h */
@@ -4235,6 +4249,8 @@ Zf(keygen)(inner_shake256_context *rng,
 		rt3 = rt2 + n;
 		poly_small_to_fp(rt1, f, logn);
 		poly_small_to_fp(rt2, g, logn);
+
+		fft_start = get_time();
 		Zf(FFT)(rt1, logn);
 		Zf(FFT)(rt2, logn);
 		Zf(poly_invnorm2_fft)(rt3, rt1, rt2, logn);
@@ -4246,6 +4262,9 @@ Zf(keygen)(inner_shake256_context *rng,
 		Zf(poly_mul_autoadj_fft)(rt2, rt3, logn);
 		Zf(iFFT)(rt1, logn);
 		Zf(iFFT)(rt2, logn);
+		fft_end = get_time();
+
+		fftTimerTotal += (fft_end - fft_start);
 		bnorm = fpr_zero;
 		for (u = 0; u < n; u ++) {
 			bnorm = fpr_add(bnorm, fpr_sqr(rt1[u]));

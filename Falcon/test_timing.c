@@ -15,6 +15,9 @@
 int randombytes(unsigned char *x, unsigned long long xlen);  // forward declaration
 extern unsigned long last_rejection_count;   // from sign.c
 extern double get_NTRUTimer(void);
+extern double get_GaussTimer(void);
+extern double get_FFTTimer(void);
+
 static inline double get_time(void) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -33,6 +36,9 @@ int main(void) {
     double total_sign_time   = 0.0;
     double total_verify_time = 0.0;
     double ntru_timing = 0.0;
+    double gauss_timing = 0.0;
+    double fft_timing = 0.0;
+
     unsigned long total_rejections = 0;
 
     for (int i = 0; i < NUM_RUNS; i++) {
@@ -50,6 +56,8 @@ int main(void) {
         double end = get_time();
         total_keygen_time += (end - start);
         ntru_timing = get_NTRUTimer();
+        gauss_timing = get_GaussTimer();
+        fft_timing = get_FFTTimer();
 
         // Measure signing time
         start = get_time();
@@ -78,11 +86,15 @@ int main(void) {
     double avg_verify_ms = (total_verify_time / NUM_RUNS) * 1000.0;
     double avg_rejections = (double)total_rejections / (double)NUM_RUNS;
     double avg_ntru_times = (ntru_timing / NUM_RUNS) * 1000.0;
+    double avg_gauss_times = (gauss_timing / NUM_RUNS) * 1000.0;
+    double avg_fft_time = (fft_timing / NUM_RUNS) * 1000.0;
 
     printf("Average key generation time:    %.3f ms\n", avg_keygen_ms);
     printf("Average signing time:           %.3f ms\n", avg_sign_ms);
     printf("Average verification time:      %.3f ms\n", avg_verify_ms);
     printf("Average rejections per sign:    %.4f\n", avg_rejections);
     printf("Average NTRU solving time:      %.3f ms\n", avg_ntru_times);
+    printf("Average Gaussian sampling time:  %.3f ms\n", avg_gauss_times);
+    printf("Average FFT time:               %.3f ms\n", avg_fft_time);
     return 0;
 }

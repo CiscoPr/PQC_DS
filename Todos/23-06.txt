@@ -1,0 +1,7 @@
+- explicar melhor os papers do benchmarking, entrar em detalhe nos limites
+- medir o tempo das outras operações no falcon
+- na methodology entrar em detalhe no porquê e nas medidas em si, inclusive a motivação para usar
+a referência e não a versão optimizada
+------------------------------------------------------------------------------------------
+O drop the Gaussian de 512 para 1024, pode-se falar da tabela gerada, q tem 1024 entries. ptt, no modo 1024
+só há um lookup à table, enqt no 512 há 2 lookups

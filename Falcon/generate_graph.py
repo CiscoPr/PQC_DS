@@ -5,12 +5,12 @@ import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 
-if len(sys.argv) != 7:
-    print("Usage: python3 generate_graph.py <mode> <keygen_ms> <sign_ms> <verify_ms> <rejections> <ntru_timing>")
+if len(sys.argv) != 9:
+    print("Usage: python3 generate_graph.py <mode> <keygen_ms> <sign_ms> <verify_ms> <rejections> <ntru_timing> <gauss_timing> <fft_timing>")
     sys.exit(1)
 
 # Read command-line arguments
-mode, keygen, sign, verify, rejections,  ntru_timing = sys.argv[1:7]
+mode, keygen, sign, verify, rejections,  ntru_timing, gauss_timing, fft_timing = sys.argv[1:9]
 
 # Directory inside the container (or host after copying) where we store results
 RESULTS_DIR = f"/results/{mode}"
@@ -27,13 +27,13 @@ def append_data():
     if not os.path.exists(CSV_FILE):
         with open(CSV_FILE, 'w') as f:
             # Add a new 'rejections' column to the header
-            f.write("timestamp,mode,keygen,sign,verify,rejections,ntru_timing\n")
+            f.write("timestamp,mode,keygen,sign,verify,rejections,ntru_timing,gauss_timing,fft_timing\n")
             print(f"Created new CSV file: {CSV_FILE}")
     now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(CSV_FILE, 'a') as f:
         # Write a new line with five fields
-        f.write(f"{now_str},{mode},{keygen},{sign},{verify},{rejections},{ntru_timing}\n")
-    print(f"Appended data: {now_str},{mode},{keygen},{sign},{verify},{rejections},{ntru_timing}")
+        f.write(f"{now_str},{mode},{keygen},{sign},{verify},{rejections},{ntru_timing},{gauss_timing},{fft_timing}\n")
+    print(f"Appended data: {now_str},{mode},{keygen},{sign},{verify},{rejections},{ntru_timing},{gauss_timing},{fft_timing}")
 
 def generate_graph():
     try:
@@ -58,6 +58,8 @@ def generate_graph():
     #ax.plot(df['run'], df['sign'],     marker='x', label='Sign (ms)')
     #ax.plot(df['run'], df['verify'],   marker='s', label='Verify (ms)')
     ax.plot(df['run'], df['ntru_timing'], marker='v', color='green', label="NTRU solving(ms)")
+    ax.plot(df['run'], df['gauss_timing'], marker='d', color='orange', label="Gauss solving(ms)")
+    ax.plot(df['run'], df['fft_timing'], marker='^', color='red', label="FFT solving(ms)")
 
     #If you ever want to plot rejections on a secondary axis, you could uncomment:
     #ax2 = ax.twinx()
