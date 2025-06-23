@@ -79,8 +79,10 @@ def generate_graph():
     all_lines  = lines_ax
     all_labels = labels_ax
 
-    ax.legend(all_lines, all_labels, loc='upper center')
-
+    ax.legend(all_lines, all_labels, loc='upper center', ncol=4)
+    ymin, ymax = ax.get_ylim()
+    ax.set_ylim(ymin, ymax * 1.05)
+    
     plt.tight_layout()
     plt.savefig(IMG_FILE)
     plt.close()
