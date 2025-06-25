@@ -1,7 +1,69 @@
 - explicar melhor os papers do benchmarking, entrar em detalhe nos limites
-- medir o tempo das outras operações no falcon
+- medir o tempo das outras operações no falcon ✅
 - na methodology entrar em detalhe no porquê e nas medidas em si, inclusive a motivação para usar
-a referência e não a versão optimizada
+a referência e não a versão optimizada✅
+
+- detalhar melhor a parte da motivação referente aos standards
+
+----------------------------------Perguntas----------------------------------------
+
+
+Na análise dos resultados, posso mencionar papers do SOTA?
+
+
+
+
+
+
 ------------------------------------------------------------------------------------------
 O drop the Gaussian de 512 para 1024, pode-se falar da tabela gerada, q tem 1024 entries. ptt, no modo 1024
 só há um lookup à table, enqt no 512 há 2 lookups
+
+Q:  Why did you not test the optimized versions instead of the reference ones?
+
+A:  These versions, written in portable C and free of architecture-specific intrinsics, expose the full algorithmic structure of each scheme
+    and allow for detailed instrumentation of internal operations such as rejection loops, Gaussian sampling, and hash tree traversal.
+    By benchmarking the reference code, this study isolates the inherent performance characteristics of each scheme — independent of
+    hardware acceleration — and provides a baseline for reproducibility, optimization planning, and constrained-environment deployment.
+
+
+
+Q:  So why do studies use the optimized version of liboqs?
+
+A:  People use liboqs because it’s fast, easy, and reflects deployment.
+    You’re not doing that kind of study.
+    You’re doing low-level, high-clarity performance forensics.
+    And for that, reference implementations are not just valid — they’re essential.
+    So while their goals are throughput and deployment validation, yours is structure, insight, and foundational understanding.
+
+
+
+Talk about implementations of the standards: https://github.com/integritychain/fips204.git
+                                             https://github.com/integritychain/fips205
+
+
+Q:  Why would anyone look at your study, given there are already standards?
+
+A:  FIPS 204 and 205 establish authoritative reference implementations for Dilithium and SPHINCS+; any real-world deployment or certification starts by validating against this baseline.
+    By instrumenting these reference codes, this thesis makes their internal performance explicit — identifying computational bottlenecks, variant-specific behaviors, and timing risks
+    that cannot be assessed via optimized “black-box” binaries. In doing so, it bridges the gap between standard compliance and practical implementation optimization,
+    providing clarity and confidence to architects, auditors, and developers.
+
+
+
+Q:  But isn't AVX2 already supported in basically anything?
+
+A:  No. It's true that modern processors generally do, but, older processors don't. Some low-power CPUs that can be be found in low-power servers also generally don't support it.
+    ARM based Chromebooks also generally don't support it. So, basically, there's no guarantee that AVX2 instructions are supported in everything and, because of that, it's better safe
+    than sorry and to work on implementations that we are sure that are supported
+
+
+
+Q:  We know that your objective is to go in detail about the mechanisms in each solution and, with that,
+    future studies would be able to improve the solutions. However, for example, when it comes to Dilithium,
+    you already talked about papers which offered optimizations in rejection sampling, some of those that were included in FIPS 204.
+    So, since these optimizations already exist, how exactly is your analysis useful?
+
+A:  My thesis  provides the first fine-grained, data-driven map of where Dilithium’s abort logic really costs time—information that’s not in FIPS 204,
+    the NIST submissions, nor in any of the rejection-sampling theorems. Future optimizations (tightening β₂, rearranging the check order, fusing
+    polynomial/point-wise operations, etc.) can now be prioritized against concrete µs-level gains, rather than broad estimates.
