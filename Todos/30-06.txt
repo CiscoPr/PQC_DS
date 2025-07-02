@@ -1,0 +1,7 @@
+Slides:
+-   Contexto
+-   Motivação com os objetivos
+-   SOTA de modo a justificar melhor os objetivos
+-   Metodologia
+-   Resultados e análise
+-   Conclusões e future works

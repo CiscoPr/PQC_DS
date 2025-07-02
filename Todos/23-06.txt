@@ -1,14 +1,21 @@
 - explicar melhor os papers do benchmarking, entrar em detalhe nos limites
 - medir o tempo das outras operações no falcon ✅
 - na methodology entrar em detalhe no porquê e nas medidas em si, inclusive a motivação para usar
-a referência e não a versão optimizada✅
+a referência e não a versão optimizada ✅
 
 - detalhar melhor a parte da motivação referente aos standards
+- corrigir bibliografia
+- corrigir parte do SOTA já analisada
+- corrigir a methodology
+- verificar as noções matemáticas e ver se têm ligação umas com as outras
 
 ----------------------------------Perguntas----------------------------------------
 
 
 Na análise dos resultados, posso mencionar papers do SOTA?
+
+
+
 
 
 
