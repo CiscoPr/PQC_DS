@@ -128,8 +128,9 @@ def main():
     sphincs_df = load_sphincs(SPHINCS_SUMMARY)
 
     # Concatenate them all
-    combined = pd.concat([dilith_df, falcon_df, sphincs_df], ignore_index=True)
-
+    #combined = pd.concat([dilith_df, falcon_df, sphincs_df], ignore_index=True)
+    combined = pd.concat([sphincs_df], ignore_index=True)
+    
     # For consistent ordering, sort by Label (you can customize this as needed)
     combined = combined.sort_values("Label", key=lambda s: s.str.lower()).reset_index(drop=True)
 
@@ -149,7 +150,8 @@ def main():
 
     # Add some text for labels, title and custom x‐axis tick labels, etc.
     ax.set_ylabel("Time (ms)")
-    ax.set_title("Average KeyGen/Sign/Verify Time for PQC Schemes")
+    ax.set_xlabel("SPHINCS+ Parameter Set")
+    ax.set_title("Average KeyGen/Sign/Verify Time for Parameter Set")
     ax.set_xticks(x)
     ax.set_xticklabels(labels, rotation=90, fontsize=8)
     ax.set_xlim(x[0] - 1, x[-1] + 1)  # trims extra space left/right of bars
