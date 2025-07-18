@@ -1,97 +1,110 @@
 #!/usr/bin/env bash
+set -e
 
-PS3="Please select which Dockerfile to build and run: "
-options=("Dilithium" "SPHINCS+" "Falcon" "Quit")
+PS3="Please select which scheme to build and run: "
+schemes=("Dilithium" "SPHINCS+" "Falcon" "Quit")
 
-select opt in "${options[@]}"; do
-    case $opt in
-        "Dilithium")
-            docker stop dilithium_container
-            docker rm dilithium_container
-            echo "Building Dilithium Docker image..."
-            docker build -t dilithium_image ./Dilithium
+select scheme in "${schemes[@]}"; do
+  case $scheme in
 
-            echo "Running Dilithium container in detached mode..."
-            mkdir -p Dilithium/results/mode2
-            mkdir -p Dilithium/results/mode3
-            mkdir -p Dilithium/results/mode5
+    "Dilithium")
+      PS3="  → Select Dilithium analysis mode: "
+      modes=("general_analysis" "no_rejections" "rejections" "Back")
 
-            docker run --cpuset-cpus="0" --name dilithium_container -d dilithium_image
+      select mode in "${modes[@]}"; do
+        case $mode in
+          "Back")
+            break
+            ;;
+          "general_analysis"|"no_rejections"|"rejections")
+            mode_dir="./Dilithium/$mode"
+            container="dilithium_${mode}_container"
+            image="dilithium_${mode}_image"
+            results_dir="$mode_dir/results"
 
-            echo "Waiting for container to finish..."
-            docker wait dilithium_container
+            echo "🛑 Tearing down old container (if any)…"
+            docker stop $container 2>/dev/null || true
+            docker rm   $container 2>/dev/null || true
 
-            echo "Copying results from container..."
+            echo "📦 Building Dilithium ($mode) image…"
+            docker build -t $image "$mode_dir"
 
-            for mode in 2 3 5; do
-                docker cp dilithium_container:/results/dilithium_times_mode${mode}.csv Dilithium/results/mode${mode}/dilithium_times.csv
-                docker cp dilithium_container:/results/dilithium_times_mode${mode}.png Dilithium/results/mode${mode}/dilithium_times.png
-                docker cp dilithium_container:/results/rejection_log_mode${mode}.csv Dilithium/results/mode${mode}/rejection_timings.csv
+            echo "🏃 Running container in detached mode…"
+            mkdir -p "$results_dir"/mode{2,3,5}
+            docker run --cpuset-cpus="0" --name $container -d $image
+
+            echo "⏱ Waiting for container to finish…"
+            docker wait $container
+
+            echo "📋 Copying results into $results_dir…"
+            for m in 2 3 5; do
+              docker cp $container:/results/dilithium_times_mode${m}.csv \
+                "$results_dir/mode${m}/dilithium_times.csv"
+              docker cp $container:/results/dilithium_times_mode${m}.png \
+                "$results_dir/mode${m}/dilithium_times.png"
+              docker cp $container:/results/rejection_log_mode${m}.csv \
+                "$results_dir/mode${m}/rejection_timings.csv"
             done
 
-            echo "Results have been downloaded to the local 'results' folder."
-            break
+            echo "✅ Dilithium results for '$mode' are in $results_dir."
+            break 2
             ;;
-        "SPHINCS+")
-            echo "Stopping any running SPHINCS+ container..."
-            docker stop sphincsplus_container
-            docker rm sphincsplus_container
-
-            echo "Building SPHINCS+ Docker image..."
-            docker build -t sphincsplus_image ./SPHINCS+
-
-            # create the local results folders
-            mkdir -p ./SPHINCS+/results_folder
-
-            echo "Running SPHINCS+ container in detached mode..."
-            docker run --cpuset-cpus="0" --name sphincsplus_container -d sphincsplus_image
-
-            echo "Waiting for SPHINCS+ container to finish..."
-            docker wait sphincsplus_container
-
-            # copy from container
-            echo "Copying results out of container..."
-            docker cp sphincsplus_container:/results/. ./SPHINCS+/results_folder
-
-            echo "Removing SPHINCS+ container..."
-            # docker rm sphincsplus_container
-            echo "SPHINCS+ results have been downloaded to the local 'SPHINCS+/results' folder."
-            break
+          *)
+            echo "❌ Invalid mode. Please choose one of: ${modes[*]}"
             ;;
+        esac
+      done
+      ;;
 
-        "Falcon")
-            echo "Stopping any running Falcon container..."
-            docker stop falcon_container 2>/dev/null
-            docker rm falcon_container 2>/dev/null
+    "SPHINCS+")
+      echo "🛑 Stopping old SPHINCS+ container…"
+      docker stop sphincsplus_container 2>/dev/null || true
+      docker rm   sphincsplus_container 2>/dev/null || true
 
-            echo "Building Falcon Docker image..."
-            docker build -t falcon_image ./Falcon
+      echo "📦 Building SPHINCS+ image…"
+      docker build -t sphincsplus_image ./SPHINCS+
 
-            # Create local results folders
-            mkdir -p ./Falcon/results/512
-            mkdir -p ./Falcon/results/1024
+      echo "🏃 Running SPHINCS+ container…"
+      mkdir -p ./SPHINCS+/results_folder
+      docker run --cpuset-cpus="0" --name sphincsplus_container -d sphincsplus_image
 
-            echo "Running Falcon container in detached mode..."
-            docker run --cpuset-cpus="0" --name falcon_container -d falcon_image
+      echo "⏱ Waiting for SPHINCS+ container to finish…"
+      docker wait sphincsplus_container
 
-            echo "Waiting for Falcon container to finish..."
-            docker wait falcon_container
+      echo "📋 Copying SPHINCS+ results…"
+      docker cp sphincsplus_container:/results/. ./SPHINCS+/results_folder
+      echo "✅ SPHINCS+ results are in ./SPHINCS+/results_folder."
+      break
+      ;;
 
-            # Copy results from container
-            echo "Copying results out of container..."
-            docker cp falcon_container:/results/. ./Falcon/results
+    "Falcon")
+      echo "🛑 Stopping old Falcon container…"
+      docker stop falcon_container 2>/dev/null || true
+      docker rm   falcon_container 2>/dev/null || true
 
-            echo "Removing Falcon container..."
-            #docker rm falcon_container
-            echo "Falcon results for both modes have been downloaded to the local 'Falcon/results' folder."
-            break
-            ;;
+      echo "📦 Building Falcon image…"
+      docker build -t falcon_image ./Falcon
 
-        "Quit")
-            break
-            ;;
-        *)
-            echo "Invalid option. Try again."
-            ;;
-    esac
-done
+      echo "🏃 Running Falcon container…"
+      mkdir -p ./Falcon/results/512 ./Falcon/results/1024
+      docker run --cpuset-cpus="0" --name falcon_container -d falcon_image
+
+      echo "⏱ Waiting for Falcon container to finish…"
+      docker wait falcon_container
+
+      echo "📋 Copying Falcon results…"
+      docker cp falcon_container:/results/. ./Falcon/results
+      echo "✅ Falcon results are in ./Falcon/results."
+      break
+      ;;
+
+    "Quit")
+      echo "Goodbye!"
+      break
+      ;;
+
+    *)
+      echo "❌ Invalid option. Try again."
+      ;;
+  esac
+ done
