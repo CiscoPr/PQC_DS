@@ -78,24 +78,45 @@ select scheme in "${schemes[@]}"; do
       ;;
 
     "Falcon")
-      echo "🛑 Stopping old Falcon container…"
-      docker stop falcon_container 2>/dev/null || true
-      docker rm   falcon_container 2>/dev/null || true
+      PS3="  → Select Falcon analysis mode: "
+      f_modes=("general_analysis" "keygen_operations" "Back")
 
-      echo "📦 Building Falcon image…"
-      docker build -t falcon_image ./Falcon
+      select fmode in "${f_modes[@]}"; do
+        case $fmode in
+          "Back")
+            break
+            ;;
+          "general_analysis"|"keygen_operations")
+            mode_dir="./Falcon/$fmode"
+            container="falcon_${fmode}_container"
+            image="falcon_${fmode}_image"
+            results_dir="$mode_dir/results"
 
-      echo "🏃 Running Falcon container…"
-      mkdir -p ./Falcon/results/512 ./Falcon/results/1024
-      docker run --cpuset-cpus="0" --name falcon_container -d falcon_image
+            echo "🛑 Tearing down old container (if any)…"
+            docker stop $container 2>/dev/null || true
+            docker rm   $container 2>/dev/null || true
 
-      echo "⏱ Waiting for Falcon container to finish…"
-      docker wait falcon_container
+            echo "📦 Building Falcon ($fmode) image…"
+            docker build -t $image "$mode_dir"
 
-      echo "📋 Copying Falcon results…"
-      docker cp falcon_container:/results/. ./Falcon/results
-      echo "✅ Falcon results are in ./Falcon/results."
-      break
+            echo "🏃 Running Falcon container in detached mode…"
+            mkdir -p "$results_dir"/{512,1024}
+            docker run --cpuset-cpus="0" --name $container -d $image
+
+            echo "⏱ Waiting for Falcon container to finish…"
+            docker wait $container
+
+            echo "📋 Copying results into $results_dir…"
+            docker cp $container:/results/. "$results_dir"
+
+            echo "✅ Falcon results for '$fmode' are in $results_dir."
+            break 2
+            ;;
+          *)
+            echo "❌ Invalid mode. Please choose one of: ${f_modes[*]}"
+            ;;
+        esac
+      done
       ;;
 
     "Quit")
