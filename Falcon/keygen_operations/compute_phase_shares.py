@@ -2,28 +2,17 @@
 """
 compute_phase_shares.py
 
-Reads a CSV of Falcon keygen phase timings and computes the fraction
-of each subphase relative to the total key generation time, then
-outputs a summary CSV and bar chart.
+Reads a Falcon timing CSV with columns:
+  mode,iteration,keygen,sign,verify,rejections,ntru_timing,gauss_timing,fft_timing
 
-Usage:
-    python3 compute_phase_shares.py <input_csv> <output_csv> <output_png>
-
-Example:
-    python3 compute_phase_shares.py falcon_512_times.csv phase_shares_512.csv phase_shares_512.png
+Computes fraction of each subphase (NTRU, Gauss, FFT) relative to the keygen time,
+adds the "other" fraction (the remainder), then writes a CSV of those fractions and a
+dot-and-error-bar chart of the mean ± SEM.
 """
 import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-
-def compute_shares(df, time_cols, total_col):
-    # Compute fraction of each phase per run
-    shares = {}
-    for col in time_cols:
-        shares[f"{col}_frac"] = df[col] / df[total_col]
-    return pd.DataFrame(shares)
-
 
 def main():
     if len(sys.argv) != 4:
@@ -31,35 +20,60 @@ def main():
         sys.exit(1)
 
     in_csv, out_csv, out_png = sys.argv[1:]
-    # Read timing CSV
     df = pd.read_csv(in_csv)
 
-    # Expected columns in input: 'KeyGen', 'NTRU', 'Gauss', 'FFT', 'Other'
-    # adjust names if different
-    total_col = 'keygen'
-    phase_cols = ['ntru_timing', 'gauss_timing', 'fft_timing']
-    # if there is an 'Other' column, include it:
-    if 'Other_ms' in df.columns:
-        phase_cols.append('Other_ms')
+    # These must match the column names in your CSV
+    total_col  = "keygen"
+    phase_cols = ["ntru_timing", "gauss_timing", "fft_timing"]
 
-    shares_df = compute_shares(df, phase_cols, total_col)
+    # Compute per-run fractions
+    shares_df = df[phase_cols].div(df[total_col], axis=0)
+    # Add "other" as the remainder
+    shares_df['other_frac'] = 1 - shares_df.sum(axis=1)
+
+    # Save the fractions CSV
     shares_df.to_csv(out_csv, index=False)
-    print(f"Saved phase share fractions to {out_csv}")
+    print(f"Saved phase-share fractions to {out_csv}")
 
-    # Compute mean and error bars
+    # Compute mean and SEM
     means = shares_df.mean()
-    ses = shares_df.sem()
+    sems  = shares_df.sem()
 
-    # Plot
+    # --- Dot-and-error-bar style plot ---
     plt.figure(figsize=(6,4))
-    x = np.arange(len(means))
-    plt.bar(x, means, yerr=ses, capsize=5)
-    plt.xticks(x, [c.replace('_frac','') for c in means.index], rotation=20)
-    plt.ylabel('Fraction of KeyGen time')
-    plt.title('Phase Shares')
+    ax = plt.gca()
+
+    phases = means.index.tolist()
+    x = np.arange(len(phases))
+
+    # Markers and colors for each phase (4 phases now)
+    markers = ['o','^','D','s']
+    colors  = ['C0','C1','C2','C3']
+
+    for i, phase in enumerate(phases):
+        ax.errorbar(
+            x[i], means[phase],
+            yerr=sems[phase],
+            fmt=markers[i],
+            markersize=8,
+            markerfacecolor=colors[i],
+            markeredgecolor='black',
+            elinewidth=1.5,
+            capsize=4
+        )
+
+    ax.set_xticks(x)
+    # Clean up labels: drop suffixes
+    labels = [p.replace('_timing','').replace('_frac','').upper() for p in phases]
+    ax.set_xticklabels(labels, rotation=20, ha='right')
+
+    ax.set_ylabel('Fraction of KeyGen time')
+    ax.set_title('Phase Shares')
+    ax.grid(axis='y', linestyle='--', alpha=0.6)
+
     plt.tight_layout()
     plt.savefig(out_png)
-    print(f"Saved phase share bar chart to {out_png}")
+    print(f"Saved phase-share dot-and-error-bar chart to {out_png}")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
